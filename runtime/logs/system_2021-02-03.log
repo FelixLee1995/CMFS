@@ -1,0 +1,4 @@
+[2021-02-03 14:51:48.524203] [3303179] [info] [Init.h:29(SetLogger)] Server Start!
+[2021-02-03 14:54:47.707165] [3306319] [info] [:()] logger test
+[2021-02-03 14:54:47.707255] [3306319] [info] [Init.h:31(SetLogger)] Server Start!
+[2021-02-03 14:56:48.921889] [3308622] [info] [Init.h:30(SetLogger)] Server Start!

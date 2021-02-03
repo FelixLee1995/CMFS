@@ -11,13 +11,17 @@ project(CMFS)
 #设定CPP版本
 set(CMAKE_CXX_STANDARD 11)
 
+find_package(GTest CONFIG REQUIRED)
+
+
 #设置UNICODE字符集
 add_definitions(-DUNICODE -D_UNICODE)
 
 include_directories(include)
+include_directories(dependencies/include)
 
+link_directories(dependencies/lib)
 link_directories(lib)
-
 
 #扫描src目录, 获取.c .cpp 源码文件列表
 file(GLOB_RECURSE DIR_SRCS ./src/*.cpp  ./src/*.c)
@@ -28,6 +32,8 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/runtime)
 
 #使用源码列表生成可执行文件
 ADD_EXECUTABLE(cmfs ${DIR_SRCS})
+
+target_link_libraries(cmfs PRIVATE GTest::gmock GTest::gtest GTest::gmock_main GTest::gtest_main)
 
 
 #设置msvc编译选项 -- 目标是否使用静态运行时 
