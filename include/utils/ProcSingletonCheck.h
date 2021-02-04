@@ -73,8 +73,9 @@ namespace CommonTools{
         }
 
         /* 锁定文件成功后，会一直持有这把锁，知道进程退出，或者手动 close 文件
-       然后将进程的进程号写入到 pid 文件*/
-        sprintf(str, "%d\n", getpid()); // \n is a symbol.
+       **然后将进程的进程号写入到 pid 文件
+       */
+        sprintf(str, "%d\n", getpid());
         ssize_t len = std::strlen(str);
         ssize_t ret = write(pidfile, str, len);
         if (ret != len)

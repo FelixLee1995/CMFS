@@ -7,7 +7,7 @@
 
 #include <interface/IQueue.h>
 #include <functional>
-#include "moodycamelqueue/concurrentqueue.h"
+#include "core/queue/concurrentqueue.h"
 
 template <typename T, int MAX_CAPICITY>
 class ConcurrentQueue: public IQueue<T>{

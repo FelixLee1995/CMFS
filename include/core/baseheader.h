@@ -5,6 +5,8 @@
 #ifndef FINANACE_MARKET_BASEHEADER_H
 #define FINANACE_MARKET_BASEHEADER_H
 
+#pragma once
+
 #include <spdlog/spdlog.h>
 
 
@@ -15,6 +17,7 @@
 #include "singleton.h"
 #include "nocopyable.h"
 #include "plantformtools.h"
+#include "Init.h"
 
 
 #endif //FINANACE_MARKET_BASEHEADER_H

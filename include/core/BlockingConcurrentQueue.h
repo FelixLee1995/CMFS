@@ -8,7 +8,7 @@
 
 #include <interface/IQueue.h>
 #include <functional>
-#include "moodycamelqueue/blockingconcurrentqueue.h"
+#include "core/queue/blockingconcurrentqueue.h"
 
 template <typename T, int MAX_CAPICITY, bool isCpuPin = false>
 class BlockingConcurrentQueue: public IQueue<T>{
