@@ -1,5 +1,5 @@
-﻿#ifndef _CBASE_H
-#define _CBASE_H
+﻿#ifndef CBASE_H
+#define CBASE_H
 
 #include <string>
 #include <cstring>

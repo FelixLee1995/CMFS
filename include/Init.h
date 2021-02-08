@@ -11,6 +11,7 @@
 #include <iostream>
 #include "core/CFlow.h"
 #include "core/singleton.h"
+#include "core/coredump.h"
 #include "spdlog/sinks/daily_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "CConfig.hpp"
@@ -40,7 +41,9 @@ void SetLogger()
 
 void InitEnv() 
 {
+    //SetCoredump();
     SetLogger();
+
     Singleton<CConfig>::Instance("config/config.json");
     Singleton<CFlowManager>::Instance();
 
