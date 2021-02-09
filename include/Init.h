@@ -48,8 +48,16 @@ void InitEnv()
     Singleton<CFlowManager>::Instance();
 
     auto flowManager = Singleton<CFlowManager>::GetInstance();
-    flowManager->AddFlow(std::make_tuple(TOPIC_MARKET_PROCESS, FUNC_MARKET_RECV));
- 
+    flowManager->AddFlow(std::make_tuple(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SUB));
+    flowManager->AddFlow(std::make_tuple(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_UNSUB));
+    flowManager->AddFlow(std::make_tuple(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN));
+
+    flowManager->AddFlow(std::make_tuple(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGIN));
+    flowManager->AddFlow(std::make_tuple(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGOUT));
+
+
+
+
 
 }
 

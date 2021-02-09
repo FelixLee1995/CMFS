@@ -23,7 +23,7 @@ enum {
 
 
 // tuple<topcid(channel) ,  funcid>
-using funcid_t = std::tuple<uint32_t, uint32_t>;
+using funcid_t = std::tuple<uint16_t, uint16_t>;
 
 
 //todo transfer to template class
@@ -64,6 +64,7 @@ private:
 class CFlowManager{
 
     public:
+        using Sptr = std::shared_ptr<CFlowManager>;
 
         void AddFlow(funcid_t topicId) {
             auto iter = m_flows.find(topicId);

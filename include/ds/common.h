@@ -14,16 +14,17 @@
 
 
 struct MsgHeader {
-    uint32_t TopicId;
-    uint32_t FuncId;
-    uint32_t ContentLen;
+    uint16_t TopicId;
+    uint16_t FuncId;
+    uint16_t ContentLen;
+    uint16_t SessionId;
 };
 
 
 
 struct Msg{
     MsgHeader Header;
-    char Pack[1024];
+    char Pack[MSG_PACK_MAX_LENGTH];
 
 //    Msg(): Header(){
 //        std::memset(Pack, 0, sizeof(Pack));

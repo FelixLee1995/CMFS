@@ -10,25 +10,34 @@
 #pragma once
 
 #include <atomic>
+#include <map>
 #include "asio.hpp"
 #include "CTcpSession.h"
+#include "core/CFlow.h"
+
+class CTcpSession;
+class CTcpChatroom;
 
 class CTcpServer
 {
     private:
+        std::atomic_uint16_t m_SessionIdx;
         std::atomic_bool m_IsWorking;
         std::size_t m_MaxOnlineUsers;
         int m_Port;
-        tcp::acceptor m_Acceptor;
+        std::map<int, std::shared_ptr<CTcpSession>> m_SessionMap;   /// 维护tcp会话映射
+        asio::ip::tcp::acceptor m_Acceptor;
         CTcpChatroom m_Chatroom;
-        asio::io_context m_IoContext;
+        CFlowManager::Sptr m_FlowManager;
                 
     public:
-        CTcpServer(std::size_t maxOnlineUsers, int port);
+        using Sptr = std::shared_ptr<CTcpServer>;
+        CTcpServer(std::size_t maxOnlineUsers, int port, asio::io_context& ctx);
         ~CTcpServer();
         void Start();
         void Stop();
         void DoAccept();
+        int PubBizMsg(Msg msg);
 };
 
 

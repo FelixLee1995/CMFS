@@ -1,15 +1,18 @@
 {
-    "MarketSource": {
+    "marketSource": {
         "ip": "127.0.0.1",
         "port": 18001
     },
-    "Log": {
-        "Level": "Info",
-        "LogFile": "sys.log"
+    "front": {
+        "port": 7001
+    },
+    "log": {
+        "level": "Info",
+        "logFile": "sys.log"
     },
 
-    "App": {
-        "MaxOnlineUsers": 1024,
-        "ConnTimeout": 60
+    "app": {
+        "maxOnlineUsers": 1024,
+        "connTimeout": 60
     }
 }   

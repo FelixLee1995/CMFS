@@ -17,7 +17,7 @@ private:
 
 
 public:
-
+    using Ptr = std::shared_ptr<CConfig>;
     explicit CConfig(const std::string& configpath){
         try {
             std::ifstream i(configpath);
@@ -34,6 +34,16 @@ public:
         std::lock_guard<std::mutex> guard(m_ConfigLock);
         if (m_ConfigJson.contains(configName)) {
             return m_ConfigJson[configName].get<T>();
+        }
+        return defaultValue;
+    }
+
+    template<typename  T>
+    T LookupConfigWithFlatName(const std::string& configName, const T& defaultValue) {
+        std::lock_guard<std::mutex> guard(m_ConfigLock);
+        auto flatjson = m_ConfigJson.flatten();
+        if (flatjson.contains(configName)) {
+            return flatjson[configName].get<T>();
         }
         return defaultValue;
     }

@@ -5,8 +5,12 @@
 */
 
 #pragma once
-#include <sys/resource.h>
+
 #include <iostream>
+
+#ifdef linux
+#include <sys/resource.h>
+#endif
 
 #define CORE_SIZE 1024 * 1024 * 10000
 
