@@ -27,7 +27,7 @@ class CTcpServer
         int m_Port;
         std::map<int, std::shared_ptr<CTcpSession>> m_SessionMap;   /// 维护tcp会话映射
         asio::ip::tcp::acceptor m_Acceptor;
-        CTcpChatroom m_Chatroom;
+        std::shared_ptr<CTcpChatroom> m_ChatroomPtr;
         CFlowManager::Sptr m_FlowManager;
                 
     public:

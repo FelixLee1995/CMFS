@@ -164,7 +164,7 @@ class CTcpSession : public CTcpCommunicator, public std::enable_shared_from_this
 {
 private:
     tcp::socket m_Socket;
-    CTcpChatroom &m_Chatroom;
+    std::shared_ptr<CTcpChatroom> &m_ChatroomPtr;
     std::shared_ptr<CTcpServer> m_Server;
     CRevcBuffer m_RecvBuffer;
     MessageWrapper m_Msg;
@@ -173,7 +173,7 @@ private:
 
 public:
     using Sptr = std::shared_ptr<CTcpSession>;
-    CTcpSession(tcp::socket socket, CTcpChatroom &chatroom, uint16_t sessionId);
+    CTcpSession(tcp::socket socket, std::shared_ptr<CTcpChatroom> chatroom, uint16_t sessionId);
 
     void Start();
     void DoReadHeader();

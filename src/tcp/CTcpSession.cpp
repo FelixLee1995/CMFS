@@ -12,7 +12,7 @@
     do                                                           \
     {                                                        \
         Msg msg{};                                           \
-        bzero(&msg, sizeof(msg));                            \
+        memset(&msg, 0, sizeof(msg));                            \
         msg.Header.TopicId = TOPIC_USER_MANAGE;              \
         msg.Header.FuncId = FUNC_REQ_USER_LOGIN;             \
         msg.Header.SessionId = SESSION_ID;                   \
@@ -39,15 +39,15 @@ void CTcpChatroom::leave(communitor_ptr participant)
 
 
 
-CTcpSession::CTcpSession(tcp::socket socket, CTcpChatroom &chatroom, uint16_t sessionId)
-    : m_Socket(std::move(socket)), m_Chatroom(chatroom), m_RecvBuffer(), m_SessionId(sessionId)
+CTcpSession::CTcpSession(tcp::socket socket, std::shared_ptr<CTcpChatroom> chatroom, uint16_t sessionId)
+    : m_Socket(std::move(socket)), m_ChatroomPtr(chatroom), m_RecvBuffer(), m_SessionId(sessionId)
 {
     m_Server.reset(Singleton<CTcpServer>::GetInstance());
 }
 
 void CTcpSession::Start()
 {
-    m_Chatroom.join(shared_from_this());
+    m_ChatroomPtr->join(shared_from_this());
     DoReadHeader();
 }
 
@@ -138,7 +138,7 @@ void CTcpSession::do_read_body()
             }
             else
             {
-                m_Chatroom.leave(shared_from_this());
+                m_ChatroomPtr->leave(shared_from_this());
             }
         });
 }
@@ -170,7 +170,7 @@ void CTcpSession::DoWrite()
             }
             else
             {
-                m_Chatroom.leave(shared_from_this());
+                m_ChatroomPtr->leave(shared_from_this());
             }
         });
 }
