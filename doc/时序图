@@ -1,0 +1,44 @@
+@startuml
+actor 用户
+用户 -> tcpServer: 请求登出
+tcpServer -> 用户管理模块: 解包并转发
+用户管理模块 -> 用户管理模块: 修改Usersession状态
+tcpServer <- 用户管理模块 : 返回结果
+用户 <- tcpServer: 压缩封包并返回结果, 断开socket
+@enduml
+
+
+
+@startuml
+actor 用户
+用户 -> tcpServer: 请求登录
+tcpServer -> 用户管理模块: 解包并转发
+用户管理模块 -> 用户管理模块: 通过文件或database检验
+tcpServer <- 用户管理模块 : 返回结果
+用户 <- tcpServer: 压缩封包并返回结果
+@enduml
+
+
+@startuml
+actor 用户
+用户 -> tcpServer: 请求订阅
+tcpServer -> 行情管理模块: 解包并转发
+行情管理模块 -> 行情管理模块: 根据订阅匹配行情快照中的数据， 修改订阅列表， 将行情快照加入发送队列
+tcpServer <- 行情管理模块 : 返回订阅结果
+用户 <- tcpServer: 压缩封包并返回结果
+...
+tcpServer <- 行情管理模块 : 行情快照推送
+用户 <- tcpServer: 压缩封包并返回结果
+@enduml
+
+
+
+@startuml
+行情源 -> 行情适配器: 实时行情推送
+行情适配器 -> 行情适配器: 根据行情种类进行转换， 输出结果为ctp快照行情
+行情适配器 -> 行情管理模块: 将行情加入发送队列
+行情管理模块 -> 行情管理模块 : 根据订阅列表获取发送对象
+行情管理模块 -> tcpServer : 发送行情业务包
+actor 用户
+tcpServer -> 用户: 压缩封包并发送
+@enduml

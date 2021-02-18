@@ -33,16 +33,19 @@ struct UserSession
     char Status;      ///登录状态
     UserSessionIdType UserSessionID;      /// userSessionID
     SessionIdType SessionID;     /// 套接字FD
+    long Timestamp; //标记这个用户， 区别不同登录时间用户重用 UserSessionID
 };
 
 
 
-///  行情的内存结构     总表为产品，  每个产品有个子表， 存储合约级别 MarketData
+///  行情的最小存储内存结构     总表为hash表， 子结构存储合约级别 MarketData
 ///  
 struct MarketData
 {
     byte subscribers[128];    //
+    long SubsTimestamp[1024];          // 解决登出时订阅过期的问题
     CThostFtdcDepthMarketDataField data;
+
 };
 
 
