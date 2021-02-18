@@ -21,7 +21,7 @@ class CTcpChatroom;
 class CTcpServer
 {
     private:
-        std::atomic_uint16_t m_SessionIdx;
+        std::atomic<uint16_t> m_SessionIdx;
         std::atomic_bool m_IsWorking;
         std::size_t m_MaxOnlineUsers;
         int m_Port;

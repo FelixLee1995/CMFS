@@ -17,7 +17,7 @@ struct MsgHeader {
     uint16_t TopicId;
     uint16_t FuncId;
     uint16_t ContentLen;
-    uint16_t SessionId;
+    uint32_t SessionId;
 };
 
 

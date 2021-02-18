@@ -13,7 +13,18 @@
 
 
 
+using byte = unsigned char;
 using UserSessionIdType = uint8_t;
+using SessionIdType = uint32_t;
+
+
+enum UserSessionStatus
+{
+    Login = '0',
+    Timeout = '1',
+    Invalid = '2'
+};
+
 
 struct UserSession
 {
@@ -21,17 +32,16 @@ struct UserSession
     bool IfUnsubAll;  /// 是否退订全部
     char Status;      ///登录状态
     UserSessionIdType UserSessionID;      /// userSessionID
-    int Fd;     /// 套接字FD
+    SessionIdType SessionID;     /// 套接字FD
 };
 
 
 
 ///  行情的内存结构     总表为产品，  每个产品有个子表， 存储合约级别 MarketData
 ///  
-
 struct MarketData
 {
-    std::byte subscribers[128];    //
+    byte subscribers[128];    //
     CThostFtdcDepthMarketDataField data;
 };
 

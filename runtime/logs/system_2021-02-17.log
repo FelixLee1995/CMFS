@@ -1,0 +1,24 @@
+[2021-02-17 21:39:16.165193] [2662] [info] [Init.h:39(SetLogger)] Server Start!
+[2021-02-17 21:39:16.176008] [2662] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
+[2021-02-17 21:39:16.177118] [2662] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
+[2021-02-17 21:39:16.177400] [2662] [info] [CTcpServer.cpp:16(CTcpServer)] after doAccept
+[2021-02-17 23:36:19.515260] [14447] [info] [Init.h:39(SetLogger)] Server Start!
+[2021-02-17 23:36:19.535828] [14447] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
+[2021-02-17 23:36:19.540866] [14447] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
+[2021-02-17 23:36:19.541993] [14447] [info] [CTcpServer.cpp:16(CTcpServer)] after doAccept
+[2021-02-17 23:37:02.418292] [14447] [info] [CTcpServer.cpp:36(operator())] socketfd is 10
+[2021-02-17 23:37:03.417801] [14464] [info] [CUserManagePlugin.cpp:34(HandleUserLogin)] handle user login
+[2021-02-17 23:39:02.847952] [15130] [info] [Init.h:39(SetLogger)] Server Start!
+[2021-02-17 23:39:02.867016] [15130] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
+[2021-02-17 23:39:02.871051] [15130] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
+[2021-02-17 23:39:02.871326] [15130] [info] [CTcpServer.cpp:16(CTcpServer)] after doAccept
+[2021-02-17 23:39:05.477032] [15130] [info] [CTcpServer.cpp:36(operator())] socketfd is 10
+[2021-02-17 23:39:09.649898] [15130] [info] [CTcpServer.cpp:36(operator())] socketfd is 11
+[2021-02-17 23:39:10.648525] [15142] [info] [CUserManagePlugin.cpp:34(HandleUserLogin)] handle user login
+[2021-02-17 23:39:11.649269] [15142] [info] [CUserManagePlugin.cpp:34(HandleUserLogin)] handle user login
+[2021-02-17 23:41:10.685331] [15130] [info] [CTcpServer.cpp:36(operator())] socketfd is 12
+[2021-02-17 23:43:11.733238] [15130] [info] [CTcpServer.cpp:36(operator())] socketfd is 13
+[2021-02-17 23:45:12.784465] [15130] [info] [CTcpServer.cpp:36(operator())] socketfd is 14
+[2021-02-17 23:47:13.831069] [15130] [info] [CTcpServer.cpp:36(operator())] socketfd is 15
+[2021-02-17 23:49:14.886932] [15130] [info] [CTcpServer.cpp:36(operator())] socketfd is 16
+[2021-02-17 23:51:15.932434] [15130] [info] [CTcpServer.cpp:36(operator())] socketfd is 17
