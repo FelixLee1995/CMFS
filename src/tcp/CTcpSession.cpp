@@ -19,10 +19,98 @@
         msg.Header.ContentLen = LEN;                         \
         memcpy(msg.Pack, CONTENT, LEN);                      \
         SERVER_SPTR->PubBizMsg(msg);                         \
-    }while(0); \
+    }while(0);
 
+// Msg msg{};
+// memset(&msg, 0, sizeof(msg));
+// msg.Header.TopicId = TOPIC_USER_MANAGE;
+// msg.Header.FuncId = FUNC_REQ_USER_LOGIN;
+// msg.Header.SessionId = m_SessionId;
+// msg.Header.ContentLen = contenLen;
+// memcpy(msg.Pack, content, contenLen);
+// m_Server->PubBizMsg(msg);
 
+CRevcBuffer::CRevcBuffer()
+{
+    m_Data = new unsigned char[1024];
+}
 
+CRevcBuffer::~CRevcBuffer()
+{
+    delete[] m_Data;
+}
+
+unsigned char *CRevcBuffer::Data()
+{
+    return m_Data;
+}
+
+size_t CRevcBuffer::Length()
+{
+    return m_Len;
+}
+
+MessageWrapper::MessageWrapper() : body_length_(0)
+{
+    memset(data_, 0, header_length + max_body_length);
+}
+
+const unsigned char *MessageWrapper::data() const
+{
+    return data_;
+}
+
+unsigned char *MessageWrapper::data()
+{
+    return data_;
+}
+
+std::size_t MessageWrapper::length() const
+{
+    return header_length + body_length_;
+}
+
+const unsigned char *MessageWrapper::body() const
+{
+    return data_ + header_length;
+}
+
+unsigned char *MessageWrapper::body()
+{
+    return data_ + header_length;
+}
+
+std::size_t MessageWrapper::body_length() const
+{
+    return body_length_;
+}
+
+void MessageWrapper::body_length(std::size_t new_length)
+{
+    body_length_ = new_length;
+    if (body_length_ > max_body_length)
+        body_length_ = max_body_length;
+}
+
+bool MessageWrapper::decode_header()
+{
+    memcpy(&body_length_, data_ + 3, 1);
+    memcpy(&body_length_ + 1, data_ + 2, 1);
+
+    body_length_ -= 1;
+    if (body_length_ > max_body_length)
+    {
+        body_length_ = 5;
+    }
+    return true;
+}
+
+void MessageWrapper::encode_header()
+{
+    unsigned char header[header_length + 1] = "";
+    //std::sprintf(header, "%4d", static_cast<int>(body_length_));
+    std::memcpy(data_, header, header_length);
+}
 
 void CTcpChatroom::join(communitor_ptr participant)
 {

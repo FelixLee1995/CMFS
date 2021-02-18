@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [2021-02-18 00:11:23.602253] [19170] [info] [Init.h:39(SetLogger)] Server Start!
 [2021-02-18 00:11:23.603452] [19170] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
 [2021-02-18 00:11:23.603595] [19170] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
@@ -54,3 +55,17 @@
 [2021-02-18 01:56:10.367945] [33543] [info] [CTcpServer.cpp:36(operator())] socketfd is 9
 [2021-02-18 01:56:11.368088] [33550] [info] [CUserManagePlugin.cpp:72(HandleUserLogin)] handle user login
 [2021-02-18 01:56:11.368190] [33550] [info] [CUserManagePlugin.cpp:90(HandleUserLogin)] sessionid is 2, contentLen is 252, field[0].topicid is 4098, field[0].size is 228,  userID is 123616]
+=======
+[2021-02-18 10:51:37.293716] [40130] [info] [Init.h:39(SetLogger)] Server Start!
+[2021-02-18 10:51:37.295222] [40130] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
+[2021-02-18 10:51:37.295296] [40130] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
+[2021-02-18 10:51:37.295406] [40130] [info] [CTcpServer.cpp:16(CTcpServer)] after doAccept
+[2021-02-18 10:52:25.144632] [40130] [info] [CTcpServer.cpp:36(operator())] socketfd is 8
+[2021-02-18 10:52:26.143752] [40137] [info] [CUserManagePlugin.cpp:34(HandleUserLogin)] handle user login
+[2021-02-18 11:03:43.076764] [57988] [info] [Init.h:39(SetLogger)] Server Start!
+[2021-02-18 11:03:43.077922] [57988] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
+[2021-02-18 11:03:43.078005] [57988] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
+[2021-02-18 11:03:43.078118] [57988] [info] [CTcpServer.cpp:16(CTcpServer)] after doAccept
+[2021-02-18 11:03:47.829799] [57988] [info] [CTcpServer.cpp:36(operator())] socketfd is 8
+[2021-02-18 11:03:48.828902] [57995] [info] [CUserManagePlugin.cpp:34(HandleUserLogin)] handle user login
+>>>>>>> 349c705b41cc54fe32f93c25fdb0a730525f710c
