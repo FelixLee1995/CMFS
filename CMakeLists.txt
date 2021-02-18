@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.14)
 
 
 #设定vckpg 路径
@@ -21,7 +21,7 @@ FetchContent_Declare(googletest
 set(gtest_force_shared_crt ON  CACHE INTERNAL "" FORCE)
 set(INSTALL_GTEST          OFF CACHE INTERNAL "" FORCE)
 FetchContent_MakeAvailable(googletest)
-# find_package(GTest CONFIG REQUIRED)
+#find_package(GTest CONFIG REQUIRED)
 
 
 #设置UNICODE字符集
