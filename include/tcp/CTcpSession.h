@@ -34,25 +34,13 @@ class CRevcBuffer
 
 
   public:
-    CRevcBuffer()
-    {
-      m_Data = new unsigned char[1024];
-    }
+    CRevcBuffer();
 
-    ~CRevcBuffer()
-    {
-      delete []m_Data;
-    }
+    ~CRevcBuffer();
     
-    unsigned char * Data()
-    {
-      return m_Data;
-    }
+    unsigned char * Data();
 
-    size_t Length()
-    {
-      return m_Len;
-    }
+    size_t Length();
 };
 
 
@@ -65,69 +53,24 @@ public:
   uint8_t ext_len_;
   unsigned char data_[header_length + max_body_length];
 
-  MessageWrapper()
-    : body_length_(0)
-  {
-    memset(data_, 0, header_length + max_body_length);
-  }
+  MessageWrapper();
 
-  const unsigned char* data() const
-  {
-    return data_;
-  }
+  const unsigned char* data() const;
 
-  unsigned char* data()
-  {
-    return data_;
-  }
+  unsigned char* data();
 
-  std::size_t length() const
-  {
-    return header_length + body_length_;
-  }
+  std::size_t length() const;
 
-  const unsigned char* body() const
-  {
-    return data_ + header_length;
-  }
+  const unsigned char* body() const;
 
-  unsigned char* body()
-  {
-    return data_ + header_length;
-  }
+  unsigned char* body();
+  std::size_t body_length() const;
 
-  std::size_t body_length() const
-  {
-    return body_length_;
-  }
+  void body_length(std::size_t new_length);
 
-  void body_length(std::size_t new_length)
-  {
-    body_length_ = new_length;
-    if (body_length_ > max_body_length)
-      body_length_ = max_body_length;
-  }
+  bool decode_header();
 
-  bool decode_header()
-  {
-    
-    memcpy(&body_length_, data_ + 3, 1);
-    memcpy(&body_length_+1, data_ + 2, 1);
-
-    body_length_ -= 1;
-    if (body_length_ > max_body_length)
-    {
-      body_length_ = 5;
-    }
-    return true;
-  }
-
-  void encode_header()
-  {
-    unsigned char header[header_length + 1] = "";
-    //std::sprintf(header, "%4d", static_cast<int>(body_length_));
-    std::memcpy(data_, header, header_length);
-  }
+  void encode_header();
 
 private:
  
