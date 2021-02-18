@@ -87,11 +87,12 @@ void CTcpSession::do_read_body()
                 uint16_t seriesID = ntohs(ftdcheader->ftdc_seq_series);
                 uint32_t seq_no = ntohl(ftdcheader->ftdc_seq_no);
                 uint32_t req_id = ntohl(ftdcheader->ftdc_req_id);
+                uint16_t contenLen = ntohs(ftdcheader->ftdc_content_len);
 
                 std::cout << "topicid is " << topicID << " seriesID is " << seriesID << " seq_no is " << seq_no
                           << " req_id is " << req_id << std::endl;
 
-                auto contenLenCheck = ftdcheader->ftdc_content_len < MSG_PACK_MAX_LENGTH;
+                auto contenLenCheck = contenLen < MSG_PACK_MAX_LENGTH;
                 if (contenLenCheck == false) {
                     SPDLOG_ERROR("contentLen oversize, ftdc_topicid[{}]", topicID);
                 }
@@ -119,8 +120,17 @@ void CTcpSession::do_read_body()
                     }
                     case ftdc_fid_ReqLogin:
                     {
-                        PUB_BIZ_MSG_TO_PLUGIN(m_Server, TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGIN, m_SessionId, content,
-                            ftdcheader->ftdc_content_len);
+                        // PUB_BIZ_MSG_TO_PLUGIN(m_Server, TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGIN, m_SessionId, content,
+                        //     ftdcheader->ftdc_content_len);
+                        Msg msg{};
+                        memset(&msg, 0, sizeof(msg));
+                        msg.Header.TopicId = TOPIC_USER_MANAGE;
+                        msg.Header.FuncId = FUNC_REQ_USER_LOGIN;
+                        msg.Header.SessionId = m_SessionId;
+                        msg.Header.ContentLen = contenLen;
+                        memcpy(msg.Pack, content, contenLen);
+                        m_Server->PubBizMsg(msg);
+
                         break;
                     }
                     case ftdc_fid_ReqSub:

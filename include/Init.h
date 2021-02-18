@@ -44,7 +44,7 @@ void InitEnv()
     //SetCoredump();
     SetLogger();
 
-    Singleton<CConfig>::Instance("config/config.json");
+    Singleton<CConfig>::Instance("./config/config.json");
     Singleton<CFlowManager>::Instance();
 
     auto flowManager = Singleton<CFlowManager>::GetInstance();

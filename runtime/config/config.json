@@ -1,5 +1,4 @@
-{
-    "marketSource": {
+{"marketSource": {
         "ip": "127.0.0.1",
         "port": 18001
     },
@@ -10,9 +9,8 @@
         "level": "Info",
         "logFile": "sys.log"
     },
-
     "app": {
         "maxOnlineUsers": 1024,
         "connTimeout": 60
     }
-}   
+}

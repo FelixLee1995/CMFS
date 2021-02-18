@@ -1,0 +1,8 @@
+[2021-02-10 16:27:12.182203] [38694] [info] [Init.h:39(SetLogger)] Server Start!
+[2021-02-10 16:27:12.185583] [38694] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
+[2021-02-10 16:27:12.186109] [38694] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
+[2021-02-10 16:27:12.186206] [38694] [info] [CTcpServer.cpp:16(CTcpServer)] after doAccept
+[2021-02-10 16:28:20.022953] [40288] [info] [Init.h:39(SetLogger)] Server Start!
+[2021-02-10 16:28:20.025456] [40288] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
+[2021-02-10 16:28:20.025987] [40288] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
+[2021-02-10 16:28:20.026067] [40288] [info] [CTcpServer.cpp:16(CTcpServer)] after doAccept
