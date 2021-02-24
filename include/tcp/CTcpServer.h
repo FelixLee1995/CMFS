@@ -38,6 +38,7 @@ class CTcpServer
         void Stop();
         void DoAccept();
         int PubBizMsg(Msg msg);
+        int SendMsg();
 };
 
 

@@ -8,17 +8,16 @@
 #define BIZ_DATA_STRUCT_H
 #pragma once
 
+#include "ds/common.h"
 #include "core/CBaseType.h"
 #include "api/ctp/ThostFtdcUserApiStruct.h"
 
 
 
-using byte = unsigned char;
-using UserSessionIdType = uint8_t;
-using SessionIdType = uint32_t;
 
 
-enum UserSessionStatus
+
+enum class UserSessionStatus
 {
     Login = '0',
     Timeout = '1',

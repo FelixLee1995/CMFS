@@ -12,6 +12,7 @@
 #include "interface/IPlugin.h"
 #include "ds/bizDataStruct.h"
 #include "api/ctp_ext/ctp_ftdc_proto.h"
+#include "tcp/CTcpServer.h"
 
 #include <vector>
 
@@ -32,13 +33,28 @@ typedef struct finder_t
 }finder_t;
 
 
+typedef struct finder_user_t
+{
+	finder_user_t(std::string userid) : UserID(userid) { }
+	bool operator()(const std::string& another)
+	{
+		return (UserID == another);
+	}
+	std::string UserID;
+}finder_user_t;
+
+
 
 class CUserSessionManager
 {
     private:
 
     std::vector<struct UserSession> m_UserSessionVec;
-    
+    std::vector<std::string> m_AuthorizedUsersVec;
+
+
+    int LoadAuthorizedUsersFromFile();
+
 
     public:
     using Ptr = std::shared_ptr<CUserSessionManager>;
@@ -48,7 +64,11 @@ class CUserSessionManager
     bool CheckIfFull();
 
     /// 检查session是否是新的
-    bool CheckIfNewSession(UserSessionIdType id);
+    bool CheckIfNewSession(const UserSessionIdType& id);
+
+    bool CheckIfAuthorized(const std::string& UserID);
+
+    bool AddUserSession(SessionIdType);
 
     ~CUserSessionManager();
 
@@ -62,6 +82,15 @@ class CUserManagePlugin: public IPlugin
 {
 private:
     CUserSessionManager::Ptr m_UserSessionManager;
+    CTcpServer::Sptr m_TcpServer;
+    enum class LoginErrorID
+    {
+        OK = 0,
+        FullOfUsers = 1,
+        SessionAlreadyInUse = 2,
+        Unauthorized = 3,
+        UserSessionOpFailed = 4
+    };
 
 public:
     CUserManagePlugin();
@@ -69,6 +98,7 @@ public:
     void MsgHandler(const Msg &msg) override;
     void HandleUserLogin(const Msg &msg);
     void HandleUserLogout(const Msg &msg);
+    int CheckLoginUser(const Msg &msg);
 
 };
 

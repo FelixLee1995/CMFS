@@ -12,12 +12,16 @@
 #define MSG_PACK_MAX_LENGTH  1024
 
 
+using byte = unsigned char;
+using UserSessionIdType = uint8_t;
+using SessionIdType = uint32_t;
+
 
 struct MsgHeader {
     uint16_t TopicId;
     uint16_t FuncId;
     uint16_t ContentLen;
-    uint32_t SessionId;
+    UserSessionIdType SessionId;
 };
 
 

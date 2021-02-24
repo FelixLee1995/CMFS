@@ -69,3 +69,11 @@
 [2021-02-18 11:03:47.829799] [57988] [info] [CTcpServer.cpp:36(operator())] socketfd is 8
 [2021-02-18 11:03:48.828902] [57995] [info] [CUserManagePlugin.cpp:34(HandleUserLogin)] handle user login
 >>>>>>> 349c705b41cc54fe32f93c25fdb0a730525f710c
+[2021-02-18 19:47:20.087527] [45142] [info] [Init.h:39(SetLogger)] Server Start!
+[2021-02-18 19:47:20.127327] [45142] [info] [IPlugin.h:35(IPlugin)] plugin[UserManagePlugin] started
+[2021-02-18 19:47:20.128395] [45142] [info] [CUserManagePlugin.cpp:19(CUserSessionManager)] Load 4 authorized users  from file
+[2021-02-18 19:47:20.133316] [45142] [info] [IPlugin.h:35(IPlugin)] plugin[MarketPlugin] started
+[2021-02-18 19:47:20.133714] [45142] [info] [CTcpServer.cpp:16(CTcpServer)] after doAccept
+[2021-02-18 19:47:34.036784] [45142] [info] [CTcpServer.cpp:36(operator())] socketfd is 10
+[2021-02-18 19:47:35.037003] [45153] [info] [CUserManagePlugin.cpp:114(HandleUserLogin)] handle user login
+[2021-02-18 19:47:41.558015] [45153] [info] [CUserManagePlugin.cpp:132(HandleUserLogin)] sessionid is 1, contentLen is 252, field[0].topicid is 4098, field[0].size is 228,  userID is 123616]

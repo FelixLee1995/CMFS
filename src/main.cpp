@@ -18,12 +18,15 @@ int main()
     auto port = configIns->LookupConfigWithFlatName<int>("/front/port", 0);
 
 
-    Singleton<CUserManagePlugin>::Instance()->Init();
-    Singleton<CMarketPlugin>::Instance()->Init();
+    auto tcpServerPtr = Singleton<CTcpServer>::Instance(1024, port, ctx);
 
+    auto userManagePluginPtr = Singleton<CUserManagePlugin>::Instance();
 
+    auto marketPluginPtr = Singleton<CMarketPlugin>::Instance();
 
-    Singleton<CTcpServer>::Instance(1024, port, ctx)->Start();
+    userManagePluginPtr->Init();
+    marketPluginPtr->Init();
+    tcpServerPtr->Start();
 
     ctx.run();
 
