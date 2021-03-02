@@ -50,3 +50,23 @@ int CTcpServer::PubBizMsg(Msg msg)
 
     return 0;
 }
+
+
+size_t CTcpServer::SendMsg(char * data, unsigned int len, SessionIdType sessionId, TOPICID_TYPE topicId)
+{
+    auto session_iter = m_SessionMap.find(sessionId);
+
+    if (session_iter == m_SessionMap.end())
+    {
+        SPDLOG_ERROR("sendMsg to session[{}] failed", sessionId);
+        return -1;
+    }
+
+    MessageWrapper msg;
+    memcpy(msg.data_, data, len);
+    msg.body_length_ = len - 4;
+
+    auto session_ptr = session_iter->second;
+    session_ptr->deliver(msg);
+
+}

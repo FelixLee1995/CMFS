@@ -98,7 +98,7 @@ public:
     void MsgHandler(const Msg &msg) override;
     void HandleUserLogin(const Msg &msg);
     void HandleUserLogout(const Msg &msg);
-    int CheckLoginUser(const Msg &msg);
+    int CheckLoginUser(int sessionID, const CThostFtdcReqUserLoginField* reqField);
 
 };
 

@@ -22,6 +22,9 @@ int main()
 
     auto userManagePluginPtr = Singleton<CUserManagePlugin>::Instance();
 
+
+    Singleton<CMarketDataManager>::Instance();
+    
     auto marketPluginPtr = Singleton<CMarketPlugin>::Instance();
 
     userManagePluginPtr->Init();

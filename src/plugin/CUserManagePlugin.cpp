@@ -60,7 +60,14 @@ int CUserSessionManager::LoadAuthorizedUsersFromFile()
 
 bool CUserSessionManager::CheckIfFull()
 {
-    return m_UserSessionVec.size() >= MAX_ONLINE_USERS;
+    for (auto session: m_UserSessionVec)
+    {
+        if (session.Status!= (char)UserSessionStatus::Login)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 
@@ -88,7 +95,7 @@ bool CUserSessionManager::CheckIfAuthorized(const std::string& UserID)
 
 bool CUserSessionManager::AddUserSession(SessionIdType sessionid)
 {
-    auto iter = std::find(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.Status != (char)UserSessionStatus::Login;});
+    auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.Status != (char)UserSessionStatus::Login;});
     if (iter == m_UserSessionVec.end())
     {
         return false;
@@ -143,14 +150,86 @@ void CUserManagePlugin::HandleUserLogin(const Msg &msg)
 {
     SPDLOG_INFO("handle user login");
 
-    auto ret = CheckLoginUser(msg);
+
+    /// 1. 业务包解包
+    
+    auto loginField = (CThostFtdcReqUserLoginField *)  (msg.Pack + sizeof(ftdc_field_header));
+    auto sessionId = msg.Header.SessionId;
+
+
+
+
+    auto ret = CheckLoginUser(sessionId, loginField);
 
     //res pair
     //ErrorEngine
 
 
-    
-    m_TcpServer->PubBizMsg();
+
+
+
+    char oriData[2048] = {0};
+    unsigned int oriLen = 2*sizeof(ftdc_field_header) + sizeof(CThostFtdcRspInfoField) + sizeof(CThostFtdcRspUserLoginField) + sizeof(ftdc_header);
+    char encodedData[2048] = {0};
+    unsigned int encodedLen = 0;
+    char* data =  oriData;
+
+    auto  ftdc_header_s = (ftdc_header *)data;
+    ftdc_header_s->ftdc_version = ftdc_version_cur;
+    ftdc_header_s->ftdc_chain = ftd_chain_last;
+    ftdc_header_s->ftdc_topic_id = htonl(ftdc_tid_RspUserLogin);
+    ftdc_header_s->ftdc_seq_series = htons(ftdc_sid_none);
+    ftdc_header_s->ftdc_seq_no = htonl(0);
+    ftdc_header_s->ftdc_field_count = htons(2);
+    ftdc_header_s->ftdc_content_len = htons(2*sizeof(ftdc_field_header) + sizeof(CThostFtdcRspInfoField) + sizeof(CThostFtdcRspUserLoginField));
+    ftdc_header_s->ftdc_req_id = htonl(0);
+
+    data += sizeof(ftdc_header);
+
+    auto header1 = (ftdc_field_header*) data;
+    header1->field_id = htons(ftdc_fid_RspInfoField);
+    header1->field_len = htons(sizeof(CThostFtdcRspInfoField));
+
+    data += sizeof(ftdc_field_header);
+
+    auto rspInfoField = (CThostFtdcRspInfoField*) data;
+
+    rspInfoField->ErrorID = htonl(ret);
+    strcpy(rspInfoField->ErrorMsg, "LoginTest");
+
+    data += sizeof(CThostFtdcRspInfoField);
+
+    auto header2 = (ftdc_field_header *)data;
+    header2->field_id = htons(ftdc_fid_RspUserLoginField);
+    header2->field_len = htons(sizeof(CThostFtdcRspUserLoginField));
+
+    data += sizeof(ftdc_field_header);
+
+    auto loginRspField = (CThostFtdcRspUserLoginField *)data;
+
+    strcpy(loginRspField->BrokerID, loginField->BrokerID);
+    strcpy(loginRspField->UserID, loginField->UserID);
+    strcpy(loginRspField->LoginTime, "17:40:00");
+    strcpy(loginRspField->TradingDay, "20210226");
+    strcpy(loginRspField->SystemName, "CMFS");
+    loginRspField->FrontID = htonl(10);
+    loginRspField->SessionID = htonl(46);
+
+
+    EncodeZero(oriData, oriLen, encodedData +  sizeof(ftd_header) + sizeof(ftdc_crpheader), &encodedLen);
+
+    auto ftd_header_s = (ftd_header*) encodedData;
+    ftd_header_s->ftd_type = ftd_type_compressed;
+    ftd_header_s->ftd_ext_len = 0;
+    ftd_header_s->ftd_content_len = htons(encodedLen + sizeof(ftdc_crpheader));
+
+    auto ftdc_crpheader_s = (ftdc_crpheader*)(encodedData + sizeof(ftd_header));
+    ftdc_crpheader_s->protocol = ftdc_crp_protocol;
+    ftdc_crpheader_s->method = ftdc_cmp_compresszero;
+
+    auto senLen = encodedLen + sizeof(ftd_header) + sizeof(ftdc_crpheader);
+
+    m_TcpServer->SendMsg(encodedData, senLen, sessionId, TOPIC_USER_MANAGE);
 
     /// 5. 生成登录应答
 
@@ -159,7 +238,10 @@ void CUserManagePlugin::HandleUserLogin(const Msg &msg)
 }
 
 
-int CUserManagePlugin::CheckLoginUser(const Msg &msg)
+
+
+
+int CUserManagePlugin::CheckLoginUser(int sessionId, const CThostFtdcReqUserLoginField* reqField)
 {
     /// 1.  检查MaxOnlineUsers是否超过 设定
     auto if_full = m_UserSessionManager->CheckIfFull();
@@ -171,13 +253,7 @@ int CUserManagePlugin::CheckLoginUser(const Msg &msg)
         return (int)LoginErrorID::FullOfUsers;
     }
 
-    /// 2. 业务包解包, 检查sessionID是否用过
     
-    auto field = (ftdc_field_header*) msg.Pack;
-    auto loginField = (CThostFtdcReqUserLoginField *)  (msg.Pack + sizeof(ftdc_field_header));
-    auto sessionId = msg.Header.SessionId;
-    SPDLOG_INFO("sessionid is {}, contentLen is {}, field[0].topicid is {}, field[0].size is {},  userID is [{}]",
-        sessionId, msg.Header.ContentLen, ntohs(field->field_id), ntohs(field->field_len), loginField->UserID);
 
 
 
@@ -193,11 +269,11 @@ int CUserManagePlugin::CheckLoginUser(const Msg &msg)
     /// 3. 校验密码    
     /// todo  用户校验拟采用文件形式存储， 可只校验用户号
 
-    auto if_authorized = m_UserSessionManager->CheckIfAuthorized(loginField->UserID);
+    auto if_authorized = m_UserSessionManager->CheckIfAuthorized(reqField->UserID);
     
     if (!if_authorized)
     {
-        SPDLOG_ERROR("UserID {} Unauthorized!", loginField->UserID);
+        SPDLOG_ERROR("UserID {} Unauthorized!", reqField->UserID);
         return (int)LoginErrorID::Unauthorized;
     }
 
@@ -212,7 +288,7 @@ int CUserManagePlugin::CheckLoginUser(const Msg &msg)
     }
 
 
-    return LoginErrorID::OK;
+    return (int)LoginErrorID::OK;
 }
 
 

@@ -38,7 +38,7 @@ class CTcpServer
         void Stop();
         void DoAccept();
         int PubBizMsg(Msg msg);
-        int SendMsg();
+        size_t SendMsg(char * data, unsigned int len, SessionIdType sessionId, TOPICID_TYPE topicId);
 };
 
 
