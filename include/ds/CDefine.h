@@ -13,6 +13,8 @@
 #include <cstdint>
 
 
+//todo 修改为配置文件配置
+#define MAX_ONLINE_USERS 1024
 
 using FUNCID_TYPE = uint16_t;
 using TOPICID_TYPE = uint16_t;

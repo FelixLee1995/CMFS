@@ -9,71 +9,17 @@
 #pragma once
 
 
+#include <vector>
 #include "interface/IPlugin.h"
 #include "ds/bizDataStruct.h"
 #include "api/ctp_ext/ctp_ftdc_proto.h"
 #include "tcp/CTcpServer.h"
+#include "plugin/CUserSessionManager.h"
 
-#include <vector>
 
-//todo 修改为配置文件配置
-#define MAX_ONLINE_USERS 1024
+
 
 using namespace ctp_ftd;
-
-
-typedef struct finder_t
-{
-	finder_t(UserSessionIdType n) : SessionID(n) { }
-	bool operator()(const UserSession another)
-	{
-		return (SessionID == another.UserSessionID);
-	}
-	UserSessionIdType SessionID;
-}finder_t;
-
-
-typedef struct finder_user_t
-{
-	finder_user_t(std::string userid) : UserID(userid) { }
-	bool operator()(const std::string& another)
-	{
-		return (UserID == another);
-	}
-	std::string UserID;
-}finder_user_t;
-
-
-
-class CUserSessionManager
-{
-    private:
-
-    std::vector<struct UserSession> m_UserSessionVec;
-    std::vector<std::string> m_AuthorizedUsersVec;
-
-
-    int LoadAuthorizedUsersFromFile();
-
-
-    public:
-    using Ptr = std::shared_ptr<CUserSessionManager>;
-    explicit CUserSessionManager(int MaxOnlineUser);
-
-    /// 检查用户数是否已经满了
-    bool CheckIfFull();
-
-    /// 检查session是否是新的
-    bool CheckIfNewSession(const UserSessionIdType& id);
-
-    bool CheckIfAuthorized(const std::string& UserID);
-
-    bool AddUserSession(SessionIdType);
-
-    ~CUserSessionManager();
-
-
-};
 
 
 
@@ -98,7 +44,7 @@ public:
     void MsgHandler(const Msg &msg) override;
     void HandleUserLogin(const Msg &msg);
     void HandleUserLogout(const Msg &msg);
-    int CheckLoginUser(int sessionID, const CThostFtdcReqUserLoginField* reqField);
+    std::tuple<int, std::string> CheckLoginUser(int sessionID, const CThostFtdcReqUserLoginField* reqField);
 
 };
 

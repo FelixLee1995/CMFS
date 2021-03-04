@@ -4,8 +4,7 @@
 
 #include "tcp/CTcpSession.h"
 #include "core/singleton.h"
-#include "spdlog/spdlog.h"
-
+#include "CLog.h"
 
 
 #define PUB_BIZ_MSG_TO_PLUGIN(SERVER_SPTR, TOPIC_ID, FUNC_ID, SESSION_ID, CONTENT, LEN, CNT) \
@@ -182,7 +181,7 @@ void CTcpSession::do_read_body()
                     uint32_t req_id = ntohl(ftdcheader->ftdc_req_id);
                     uint16_t contenLen = ntohs(ftdcheader->ftdc_content_len);
                     
-
+                    
                     SPDLOG_DEBUG("topicid is {}, seriesID is {}, seq_no is {}, reqid_is {}", topicID, seriesID, seq_no, req_id);
 
                     auto contenLenCheck = contenLen < MSG_PACK_MAX_LENGTH;
@@ -199,7 +198,7 @@ void CTcpSession::do_read_body()
                         case ftdc_fid_ReqInit:
                         {
                             MessageWrapper msg;
-                            memcpy(msg.data_, bInitRsp, sizeof(bInitRsp));
+                            memcpy(msg.data_, bInitRsp, sizeof(bInitRsp));  
                             msg.body_length_ = sizeof(bInitRsp) - 4;
 
                             deliver(msg);
@@ -216,7 +215,7 @@ void CTcpSession::do_read_body()
                         case ftdc_fid_ReqLogin:
                         {
                             PUB_BIZ_MSG_TO_PLUGIN(m_Server, TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGIN, m_SessionId, content,
-                                ftdcheader->ftdc_content_len, cnt);
+                                contenLen, cnt);
                             break;
                         }
                         case ftdc_fid_ReqSub:

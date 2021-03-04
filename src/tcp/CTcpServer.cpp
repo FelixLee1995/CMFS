@@ -69,4 +69,5 @@ size_t CTcpServer::SendMsg(char * data, unsigned int len, SessionIdType sessionI
     auto session_ptr = session_iter->second;
     session_ptr->deliver(msg);
 
+    return 0;
 }

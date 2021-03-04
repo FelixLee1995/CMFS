@@ -1,9 +1,11 @@
 #include <iostream>
+#include "Init.h"
 #include "core/baseheader.h"
 #include "core/singleton.h"
 #include "tcp/CTcpServer.h"
 #include "plugin/CUserManagePlugin.h"
 #include "plugin/CMarketPlugin.h"
+
 
 int main()
 {
@@ -20,11 +22,12 @@ int main()
 
     auto tcpServerPtr = Singleton<CTcpServer>::Instance(1024, port, ctx);
 
-    auto userManagePluginPtr = Singleton<CUserManagePlugin>::Instance();
 
-
+    Singleton<CUserSessionManager>::Instance(MAX_ONLINE_USERS);
     Singleton<CMarketDataManager>::Instance();
     
+
+    auto userManagePluginPtr = Singleton<CUserManagePlugin>::Instance();
     auto marketPluginPtr = Singleton<CMarketPlugin>::Instance();
 
     userManagePluginPtr->Init();
