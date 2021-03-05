@@ -20,7 +20,7 @@
 
 void InitEnv() 
 {
-    //SetCoredump();
+    SetCoredump();
     SetLogger();
 
     Singleton<CConfig>::Instance("./config/config.json");

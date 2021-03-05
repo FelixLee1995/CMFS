@@ -51,7 +51,7 @@ void CUserManagePlugin::HandleUserLogin(const Msg &msg)
 
 
 
-    CThostFtdcRspUserLoginField specRspInfoField = {0};
+    CThostFtdcRspUserLoginField specRspInfoField = {{0}};
 
     strcpy(specRspInfoField.BrokerID, loginField->BrokerID);
     strcpy(specRspInfoField.UserID, loginField->UserID);

@@ -78,8 +78,8 @@ inline void MyZeroMem(char* dst,int len){
 #endif
 #endif
 
-
-int static DecodeZero(const char* pOrgData, unsigned int dataLen, char* deBuf, unsigned int* deLen){//��ѹ��0�г�ѹ��
+namespace {
+int DecodeZero(const char* pOrgData, unsigned int dataLen, char* deBuf, unsigned int* deLen){//��ѹ��0�г�ѹ��
 	//int di = 0;
 	//unsigned int i  = 0;
 	const char* pEnd = pOrgData+dataLen;
@@ -105,7 +105,7 @@ int static DecodeZero(const char* pOrgData, unsigned int dataLen, char* deBuf, u
 }
 
 
-int static EncodeZero(const char* pOrgData, unsigned int dataLen, char* enBuf, unsigned int* enLen){//ѹ����0�г�ѹ��
+int EncodeZero(const char* pOrgData, unsigned int dataLen, char* enBuf, unsigned int* enLen){//ѹ����0�г�ѹ��
 	int di = 0;
 	unsigned int pi  = 0;
 	while (pi < dataLen){
@@ -131,6 +131,8 @@ int static EncodeZero(const char* pOrgData, unsigned int dataLen, char* enBuf, u
 	*enLen = di;
 	return 0;
 }
+}
+
 
 
 

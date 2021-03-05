@@ -34,6 +34,8 @@ public:
     void MsgHandler(const Msg &msg) override;
     void HandleSub(const Msg &msg);
     void HandleUnsub(const Msg &msg);
+    void HandleMarketDataRtn(const Msg &msg);
+
     size_t SubMarketByOneRule(SessionIdType sessionID, int16_t index, const std::string& rule, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp>& dataSet);
 };
 

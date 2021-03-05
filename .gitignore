@@ -2,4 +2,5 @@
 /cmake-*
 /build
 *.log
+*.core
 /runtime/logs

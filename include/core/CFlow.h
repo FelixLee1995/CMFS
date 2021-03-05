@@ -50,12 +50,12 @@ public:
     };
 
     void Proc(const Msg& msg) {
-        auto cnt = NotifyAll(msg);
+        NotifyAll(msg);
     };
 
 private:
-    std::atomic<uint64_t> seq_no_;
-    std::atomic<uint64_t> cur_idx_;
+    // std::atomic<uint64_t> seq_no_;
+    // std::atomic<uint64_t> cur_idx_;
 
     BlockingConcurrentQueue<Msg, 1024> queue_;
 };

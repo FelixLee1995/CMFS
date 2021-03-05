@@ -13,8 +13,6 @@ CMarketPlugin::CMarketPlugin(): IPlugin("MarketPlugin")
 void CMarketPlugin::Init()
 {
     spdlog::set_level(spdlog::level::debug);
-    SPDLOG_INFO("init info");
-    SPDLOG_DEBUG("init debug");
 
     m_UserSessionManager.reset(Singleton<CUserSessionManager>::GetInstance());
     m_MarketDataManager.reset(Singleton<CMarketDataManager>::GetInstance());
@@ -23,9 +21,7 @@ void CMarketPlugin::Init()
 
     Subscribe(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SUB);
     Subscribe(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_UNSUB);
-
-
-
+    Subscribe(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN);
     
 }
 void CMarketPlugin::MsgHandler(const Msg &msg)
@@ -37,6 +33,11 @@ void CMarketPlugin::MsgHandler(const Msg &msg)
         }
         case FUNC_REQ_MARKET_UNSUB: {
             HandleUnsub(msg);
+            break;
+        }
+        case FUNC_REQ_MARKET_SNAPSHOT_RTN:
+        {
+            HandleMarketDataRtn(msg);
             break;
         }
         default: {
@@ -65,10 +66,7 @@ void CMarketPlugin::HandleSub(const Msg &msg)
 
 
     std::vector<std::string> instrsVec;
-    uint8_t i = 0;
-
-    int32_t subs_cnt = 0;
-    
+    uint8_t i = 0;    
 
     while (i < cnt)
     {
@@ -174,5 +172,9 @@ size_t CMarketPlugin::SubMarketByOneRule(SessionIdType sessionid, int16_t index,
 void CMarketPlugin::HandleUnsub(const Msg &msg) {}
 
 
+void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)
+{
+
+}
 
 

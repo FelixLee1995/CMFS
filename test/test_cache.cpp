@@ -24,8 +24,8 @@ TEST(test, test_decode)
 
     auto p_ftdc_header = (ftdc_header *)debuf;
 
-    uint16_t fCount = ntohs(p_ftdc_header->ftdc_field_count);
-    uint32_t topic_id = ntohl(p_ftdc_header->ftdc_topic_id);
+    // uint16_t fCount = ntohs(p_ftdc_header->ftdc_field_count);
+    // uint32_t topic_id = ntohl(p_ftdc_header->ftdc_topic_id);
 	auto pContent = (char*)((char*)p_ftdc_header+sizeof(ftdc_header));
 
 	ftdc_field_header* pField = (ftdc_field_header*)pContent;
@@ -38,7 +38,7 @@ TEST(test, test_decode)
     if (ntohs(pField->field_id) == ftdc_fid_RspInfoField)
     {
         CThostFtdcRspInfoField *pInfo = (CThostFtdcRspInfoField *)pContent;
-        auto errorid = ntohl(pInfo->ErrorID);
+        //auto errorid = ntohl(pInfo->ErrorID);
 
         std::cout << "ErrorMsg: " << pInfo->ErrorMsg << std::endl;
     }

@@ -14,7 +14,9 @@
 
 #define CORE_SIZE 1024 * 1024 * 10000
 
-int static SetCoredump(){
+namespace {
+    
+int SetCoredump(){
 
 #ifdef linux
     struct rlimit rlmt;
@@ -34,4 +36,8 @@ int static SetCoredump(){
 #endif
     return 0;
 }
+
+}
+
+
 
