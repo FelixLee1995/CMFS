@@ -7,6 +7,7 @@
 
 #if defined(_MSC_VER) || defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
+    #pragma comment(lib,"ws2_32.lib")
 #endif 
 
 

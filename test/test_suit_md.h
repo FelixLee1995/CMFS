@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <gtest/gtest.h>
+#include "core/plantformtools.h"
 #include "test/MyMarketApi.h"
 
 
@@ -41,11 +42,11 @@ class MdApiTest: public testing::Test {
         p_api = new MyMarketApi(brokerid, userid, pwd, marketfrontAddr);
 
         p_api->Init();
-        usleep(2000000);
+        CommonSleep(2000);
         EXPECT_EQ(p_api->GetConnectStatus(), true);
   
         p_api->ReqUserLogin();
-        usleep(2000000);
+        CommonSleep(2000);
 
         // EXPECT_EQ(p_api->ReqUnSubscribeMarketData("a2105"), 0);        
         // usleep(5000000);

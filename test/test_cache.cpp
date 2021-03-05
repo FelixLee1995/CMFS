@@ -2,7 +2,7 @@
 #include "test_suit.h"
 #include "api/ctp_ext/ctp_ext.h"
 #include "api/ctp_ext/ctp_ftdc_proto.h"
-#include <arpa/inet.h>
+#include "core/plantformtools.h"
 
 using namespace ctp_ftd;
 

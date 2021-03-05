@@ -4,7 +4,7 @@
 
 #include "plugin/CUserManagePlugin.h"
 #include "api/ctp/ThostFtdcMdApi.h"
-#include <netinet/in.h>
+#include "core/baseheader.h"
 #include "utils/Utils.h"
 
 CUserManagePlugin::CUserManagePlugin(): IPlugin("UserManagePlugin")
@@ -51,11 +51,12 @@ void CUserManagePlugin::HandleUserLogin(const Msg &msg)
 
 
 
-    CThostFtdcRspUserLoginField specRspInfoField = {{0}};
+    CThostFtdcRspUserLoginField specRspInfoField = {{}};
 
     strcpy(specRspInfoField.BrokerID, loginField->BrokerID);
     strcpy(specRspInfoField.UserID, loginField->UserID);
-    strcpy(specRspInfoField.LoginTime, GetFormatTimeStr9().c_str());
+    std::string timestr = GetFormatTimeStr9();
+    strcpy(specRspInfoField.LoginTime, timestr.c_str());
     strcpy(specRspInfoField.TradingDay, "20210226");
     strcpy(specRspInfoField.SystemName, "CMFS");
     specRspInfoField.FrontID = htonl(10);
