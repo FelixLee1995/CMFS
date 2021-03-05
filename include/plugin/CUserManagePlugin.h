@@ -9,51 +9,17 @@
 #pragma once
 
 
+#include <vector>
 #include "interface/IPlugin.h"
 #include "ds/bizDataStruct.h"
 #include "api/ctp_ext/ctp_ftdc_proto.h"
+#include "tcp/CTcpServer.h"
+#include "plugin/CUserSessionManager.h"
 
-#include <vector>
 
-//todo 修改为配置文件配置
-#define MAX_ONLINE_USERS 1024
+
 
 using namespace ctp_ftd;
-
-
-typedef struct finder_t
-{
-	finder_t(UserSessionIdType n) : SessionID(n) { }
-	bool operator()(const UserSession another)
-	{
-		return (SessionID == another.UserSessionID);
-	}
-	UserSessionIdType SessionID;
-}finder_t;
-
-
-
-class CUserSessionManager
-{
-    private:
-
-    std::vector<struct UserSession> m_UserSessionVec;
-    
-
-    public:
-    using Ptr = std::shared_ptr<CUserSessionManager>;
-    explicit CUserSessionManager(int MaxOnlineUser);
-
-    /// 检查用户数是否已经满了
-    bool CheckIfFull();
-
-    /// 检查session是否是新的
-    bool CheckIfNewSession(UserSessionIdType id);
-
-    ~CUserSessionManager();
-
-
-};
 
 
 
@@ -62,6 +28,15 @@ class CUserManagePlugin: public IPlugin
 {
 private:
     CUserSessionManager::Ptr m_UserSessionManager;
+    CTcpServer::Sptr m_TcpServer;
+    enum class LoginErrorID
+    {
+        OK = 0,
+        FullOfUsers = 1,
+        SessionAlreadyInUse = 2,
+        Unauthorized = 3,
+        UserSessionOpFailed = 4
+    };
 
 public:
     CUserManagePlugin();
@@ -69,6 +44,7 @@ public:
     void MsgHandler(const Msg &msg) override;
     void HandleUserLogin(const Msg &msg);
     void HandleUserLogout(const Msg &msg);
+    std::tuple<int, std::string> CheckLoginUser(int sessionID, const CThostFtdcReqUserLoginField* reqField);
 
 };
 

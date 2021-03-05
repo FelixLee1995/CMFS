@@ -12,12 +12,17 @@
 #define MSG_PACK_MAX_LENGTH  1024
 
 
+using byte = unsigned char;
+using UserSessionIdType = uint8_t;
+using SessionIdType = uint32_t;
+
 
 struct MsgHeader {
+    uint8_t Count;  ///表示消息体中有几个连续的消息
     uint16_t TopicId;
     uint16_t FuncId;
     uint16_t ContentLen;
-    uint32_t SessionId;
+    UserSessionIdType SessionId;
 };
 
 

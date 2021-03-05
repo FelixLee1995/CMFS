@@ -5,43 +5,13 @@
 #include "plugin/CUserManagePlugin.h"
 #include "api/ctp/ThostFtdcMdApi.h"
 #include <netinet/in.h>
-
-CUserSessionManager::CUserSessionManager(int maxOnlineUser)
-{
-    m_UserSessionVec.reserve(maxOnlineUser);
-    
-}
-
-CUserSessionManager::~CUserSessionManager()
-{
-    SPDLOG_INFO("CUserSessionManager deConstruction");
-}
-
-
-bool CUserSessionManager::CheckIfFull()
-{
-    return m_UserSessionVec.size() >= MAX_ONLINE_USERS;
-}
-
-
-bool CUserSessionManager::CheckIfNewSession(UserSessionIdType id)
-{
-
-    auto iter = std::find_if(m_UserSessionVec.cbegin(), m_UserSessionVec.cend(), finder_t(id));
-    if (iter != m_UserSessionVec.end())
-    {
-        return false;
-    }
-    return true;
-}
-
-
-
+#include "utils/Utils.h"
 
 CUserManagePlugin::CUserManagePlugin(): IPlugin("UserManagePlugin")
 {
 
-    m_UserSessionManager.reset(Singleton<CUserSessionManager>::Instance(MAX_ONLINE_USERS));
+    m_UserSessionManager.reset(Singleton<CUserSessionManager>::GetInstance());
+    m_TcpServer.reset(Singleton<CTcpServer>::GetInstance());
 
 }
 
@@ -71,6 +41,39 @@ void CUserManagePlugin::HandleUserLogin(const Msg &msg)
 {
     SPDLOG_INFO("handle user login");
 
+
+    /// 1. 业务包解包
+    
+    auto loginField = (CThostFtdcReqUserLoginField *)  (msg.Pack + sizeof(ftdc_field_header));
+    auto sessionId = msg.Header.SessionId;
+
+    auto ret = CheckLoginUser(sessionId, loginField);
+
+
+
+    CThostFtdcRspUserLoginField specRspInfoField = {{0}};
+
+    strcpy(specRspInfoField.BrokerID, loginField->BrokerID);
+    strcpy(specRspInfoField.UserID, loginField->UserID);
+    strcpy(specRspInfoField.LoginTime, GetFormatTimeStr9().c_str());
+    strcpy(specRspInfoField.TradingDay, "20210226");
+    strcpy(specRspInfoField.SystemName, "CMFS");
+    specRspInfoField.FrontID = htonl(10);
+    specRspInfoField.SessionID = htonl(46);
+
+
+    TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspUserLogin, CThostFtdcRspUserLoginField, &specRspInfoField, 
+            ftdc_fid_RspUserLoginField, std::get<0>(ret), std::get<1>(ret).c_str());
+    return;
+
+}
+
+
+
+
+
+std::tuple<int, std::string> CUserManagePlugin::CheckLoginUser(int sessionId, const CThostFtdcReqUserLoginField* reqField)
+{
     /// 1.  检查MaxOnlineUsers是否超过 设定
     auto if_full = m_UserSessionManager->CheckIfFull();
     if (if_full)
@@ -78,16 +81,10 @@ void CUserManagePlugin::HandleUserLogin(const Msg &msg)
         ///todo 返回用户会话超过上限的消息
         SPDLOG_INFO("usersession full!");
 
-        return;
+        return std::make_tuple((int)LoginErrorID::FullOfUsers, "UserSession Full!");
     }
 
-    /// 2. 业务包解包, 检查sessionID是否用过
     
-    auto field = (ftdc_field_header*) msg.Pack;
-    auto loginField = (CThostFtdcReqUserLoginField *)  (msg.Pack + sizeof(ftdc_field_header));
-    auto sessionId = msg.Header.SessionId;
-    SPDLOG_INFO("sessionid is {}, contentLen is {}, field[0].topicid is {}, field[0].size is {},  userID is {}]",
-        sessionId, msg.Header.ContentLen, ntohs(field->field_id), ntohs(field->field_len), loginField->UserID);
 
 
 
@@ -96,20 +93,36 @@ void CUserManagePlugin::HandleUserLogin(const Msg &msg)
     if (!if_new_session)
     {
         SPDLOG_ERROR("session {} already in use!", sessionId);
-        return;
+        return std::make_tuple((int)LoginErrorID::SessionAlreadyInUse, "sessionAlready in use, no need to login");
     }
 
 
     /// 3. 校验密码    
     /// todo  用户校验拟采用文件形式存储， 可只校验用户号
 
+    auto if_authorized = m_UserSessionManager->CheckIfAuthorized(reqField->UserID);
+    
+    if (!if_authorized)
+    {
+        SPDLOG_ERROR("UserID {} Unauthorized!", reqField->UserID);
+        return std::make_tuple((int)LoginErrorID::Unauthorized, "unauthorized user!");
+    }
+
+
     /// 4. 生成新的UserSession, 并放入vector
 
-    m_User
+    auto if_session_op = m_UserSessionManager->AddUserSession(sessionId);
+    if (!if_session_op)
+    {
+        SPDLOG_ERROR("Failed to addUserSession {}", sessionId);
+        return std::make_tuple((int)LoginErrorID::UserSessionOpFailed, "Failed to add Usersession!");
+    }
 
 
-    return;
-
+    return std::make_tuple((int)LoginErrorID::OK, "Login Success!");
 }
+
+
+
 void CUserManagePlugin::HandleUserLogout(const Msg &msg) {}
 

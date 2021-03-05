@@ -53,4 +53,88 @@ enum ftdc_fid_ext_type: uint16_t{
 };
 
 
+#ifdef __linux__
+#define MyZeroMem(dst,len) \
+	__asm__ __volatile__("cld;"\
+		"rep stosb;"\
+		:\
+		: "a" (0),"D" (dst),"c" (len)\
+	)
+#else
+#ifdef _M_X64
+inline void MyZeroMem(char* dst,int len){
+	while(len--) *dst++ = 0;
+}
+#else
+inline void MyZeroMem(char* dst,int len){
+	__asm{
+		mov edi,[dst];
+		mov ecx,[len];
+		xor eax,eax;
+		cld;
+		rep stosb;
+	}
+}
+#endif
+#endif
+
+namespace {
+int DecodeZero(const char* pOrgData, unsigned int dataLen, char* deBuf, unsigned int* deLen){//��ѹ��0�г�ѹ��
+	//int di = 0;
+	//unsigned int i  = 0;
+	const char* pEnd = pOrgData+dataLen;
+	char* pDst = deBuf;
+	while (pOrgData<pEnd){
+		if (((*pOrgData)&0xF0)==0xE0){//ѹ��0���ֽ�
+			unsigned int j = (*pOrgData++)&0x0F;
+			if (j>0){
+				//while(j--) *pDst++=0;
+				MyZeroMem(pDst,j);
+				pDst += j;
+			}
+			else{//0xE0Ϊת��
+				*pDst++=*pOrgData++;
+			}
+		}
+		else{ //δѹ�����ֽ�
+			*pDst++=*pOrgData++;
+		}
+	}
+	*deLen = (unsigned int)(pDst-deBuf);
+	return 0;
+}
+
+
+int EncodeZero(const char* pOrgData, unsigned int dataLen, char* enBuf, unsigned int* enLen){//ѹ����0�г�ѹ��
+	int di = 0;
+	unsigned int pi  = 0;
+	while (pi < dataLen){
+		if ((((pOrgData[pi])&0xF0)==0xE0)){//��Ҫת��
+			enBuf[di++]='\xE0';
+			enBuf[di++]=pOrgData[pi];
+		}
+		else if(pOrgData[pi]==0x00){//��Ҫѹ��
+			int j = 1;
+			pi++;
+			while(pOrgData[pi]==0x00&&pi<dataLen&&j<0x0F){
+				j++;
+				pi++;
+			}
+			enBuf[di++]=(char)(0xE0+j);
+			continue;
+		}
+		else{
+			enBuf[di++]=pOrgData[pi];
+		}
+		pi++;
+	}
+	*enLen = di;
+	return 0;
+}
+}
+
+
+
+
+
 #endif

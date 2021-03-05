@@ -14,6 +14,8 @@
 
 #define CORE_SIZE 1024 * 1024 * 10000
 
+namespace {
+    
 int SetCoredump(){
 
 #ifdef linux
@@ -34,4 +36,8 @@ int SetCoredump(){
 #endif
     return 0;
 }
+
+}
+
+
 

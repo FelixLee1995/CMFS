@@ -17,7 +17,6 @@
 #include "singleton.h"
 #include "nocopyable.h"
 #include "plantformtools.h"
-#include "Init.h"
 
 
 #endif //FINANACE_MARKET_BASEHEADER_H

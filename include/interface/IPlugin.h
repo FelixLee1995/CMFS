@@ -10,7 +10,7 @@
 
 #include <string>
 #include <utility>
-#include "spdlog/spdlog.h"
+#include "CLog.h"
 #include "core/CFlow.h"
 #include "interface/IQueue.h"
 #include "CConfig.hpp"

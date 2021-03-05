@@ -1,9 +1,11 @@
 #include <iostream>
+#include "Init.h"
 #include "core/baseheader.h"
 #include "core/singleton.h"
 #include "tcp/CTcpServer.h"
 #include "plugin/CUserManagePlugin.h"
 #include "plugin/CMarketPlugin.h"
+
 
 int main()
 {
@@ -18,12 +20,19 @@ int main()
     auto port = configIns->LookupConfigWithFlatName<int>("/front/port", 0);
 
 
-    Singleton<CUserManagePlugin>::Instance()->Init();
-    Singleton<CMarketPlugin>::Instance()->Init();
+    auto tcpServerPtr = Singleton<CTcpServer>::Instance(1024, port, ctx);
 
 
+    Singleton<CUserSessionManager>::Instance(MAX_ONLINE_USERS);
+    Singleton<CMarketDataManager>::Instance();
+    
 
-    Singleton<CTcpServer>::Instance(1024, port, ctx)->Start();
+    auto userManagePluginPtr = Singleton<CUserManagePlugin>::Instance();
+    auto marketPluginPtr = Singleton<CMarketPlugin>::Instance();
+
+    userManagePluginPtr->Init();
+    marketPluginPtr->Init();
+    tcpServerPtr->Start();
 
     ctx.run();
 

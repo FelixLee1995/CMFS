@@ -59,7 +59,7 @@ namespace ctp_ftd{
 #else
 	enum ftdc_version_vals{
 #endif
-		ftdc_version_cur=0x0c,
+		ftdc_version_cur=0x0f,    // 原代码中为0x0c
 	};
 
 #if(__cplusplus>=201103L)

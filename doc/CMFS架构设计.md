@@ -17,11 +17,10 @@
 
 
 ## 4. 线程模型
-+ thread_1: async accept, recv
-+ thread_2: sync send
-+ thread_3: 用户管理模块处理线程， 主要用于管理用户会话表
-+ thread_4: 行情管理模块处理线程， 主要用于行情顺序接收并入队
-+ thread_5: 行情适配器模块处理线程， 主要用于行情接收和转换
+
+- thread_1: async accept, recv, 登录登出、订阅取消事件处理
+- thread_2: sync send
+- thread_3: 行情处理线程， 主要用于行情接收和转换、行情入队列
 
 ## 5. 功能模块
 详细见 [各模块功能列表](./功能列表.md)

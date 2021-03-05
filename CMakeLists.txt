@@ -21,11 +21,11 @@ FetchContent_Declare(googletest
 set(gtest_force_shared_crt ON  CACHE INTERNAL "" FORCE)
 set(INSTALL_GTEST          OFF CACHE INTERNAL "" FORCE)
 FetchContent_MakeAvailable(googletest)
-#find_package(GTest CONFIG REQUIRED)
+# find_package(GTest CONFIG REQUIRED)
 
 
 #设置UNICODE字符集
-add_definitions(-DUNICODE -D_UNICODE)
+add_definitions(-DUNICODE -D_UNICODE -Wall)
 
 add_definitions(-DBOOST_ASIO_NO_DEPRECATED)
 
@@ -40,7 +40,7 @@ link_directories(lib)
 file(GLOB_RECURSE DIR_SRCS ./src/*.cpp  ./src/*.c)
 
 set(TEST_CACHE_SRC ./test/test_cache.cpp)
-
+file(GLOB_RECURSE TEST_MD_SRC ./test/test_md_sub.cpp ./test/ctp/MyMarketApi.cpp ./test/ctp/MyMarketSpi.cpp)
 
 # 可执行文件输出目录
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/runtime)
@@ -50,11 +50,15 @@ set (EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/runtime)
 ADD_EXECUTABLE(cmfs ${DIR_SRCS} app.rc)
 
 ADD_EXECUTABLE(test_cache ${TEST_CACHE_SRC})
+ADD_EXECUTABLE(test_md ${TEST_MD_SRC})
+
 
 target_link_libraries(test_cache gtest)
+target_link_libraries(test_md thostmduserapi_se gtest)
 target_link_libraries(cmfs gtest)
 IF(UNIX)
   target_link_libraries(test_cache pthread)
+  target_link_libraries(test_md pthread )
   target_link_libraries(cmfs pthread)
 ENDIF()
 
