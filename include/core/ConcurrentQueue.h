@@ -34,7 +34,9 @@ public:
         T data;
         while (isRunning) {
             if (queue_.try_dequeue(data))
+            {
                 cb_(std::move(data));
+            }
             //std::cout << "lockfree queue threadid : " << this_thread::get_id() << std::endl;
         }
     }

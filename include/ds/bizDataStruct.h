@@ -49,13 +49,16 @@ struct UserSession
 ///  
 struct MarketData
 {
-    std::bitset<1024> subscribers;    // 1024为最大同时在线数量，  后续可修改为配置的方式
+    std::bitset<MAX_ONLINE_USERS> Subscribers;    // 1024为最大同时在线数量，  后续可修改为配置的方式
     //long SubsTimestamp[1024];          // 解决登出时订阅过期的问题
-    CThostFtdcDepthMarketDataField data;
-    MarketData(const std::string& instrumentID, const std::string& exchangeID): subscribers(), data()
+    CThostFtdcDepthMarketDataField Data;
+    MarketData(const std::string& instrumentID, const std::string& exchangeID): Subscribers(), Data()
     {
-        std::strcpy(this->data.InstrumentID, instrumentID.c_str());
-        std::strcpy(this->data.ExchangeID, exchangeID.c_str());
+        std::strcpy(this->Data.InstrumentID, instrumentID.c_str());
+        std::strcpy(this->Data.ExchangeID, exchangeID.c_str());
+    }
+    explicit MarketData(const CThostFtdcDepthMarketDataField& marketData): Subscribers(), Data(marketData)
+    {
     }
 };
 

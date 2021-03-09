@@ -139,3 +139,15 @@ bool CUserSessionManager::SubscribeAllBySessionID(SessionIdType sessionID)
 
     return true;
 }
+void CUserSessionManager::CheckIfSubs(std::bitset<MAX_ONLINE_USERS> &subscribers, std::set<SessionIdType>& dispatchSet) {
+    for (int i = 0; i < MAX_ONLINE_USERS; ++i)
+    {
+        auto if_subs_all = m_UserSessionVec[i].IfSubsAll;
+        auto if_un_subs_all =  m_UserSessionVec[i].IfUnsubAll;
+        auto sub =  subscribers[i];
+        if (!if_un_subs_all && (if_subs_all || sub == true))
+        {
+            dispatchSet.insert(m_UserSessionVec[i].SessionID);
+        }
+    }
+}

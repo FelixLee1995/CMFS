@@ -28,7 +28,7 @@ private:
 
 public:
     explicit IPlugin(std::string  pluginName):
-          m_Name(std::move(pluginName)), m_MsgQueue(std::bind(&IPlugin::MsgHandler, this, std::placeholders::_1))
+          m_Name(std::move(pluginName)), m_MsgQueue([this](auto && pH1) { MsgHandler(std::forward<decltype(pH1)>(pH1)); })
     {
         m_ConfigSptr.reset(Singleton<CConfig>::GetInstance());
         assert(m_ConfigSptr);
@@ -46,7 +46,7 @@ public:
 //    virtual void OnRequest() = 0;
 //    virtual void OnRecvMsg(const Msg&) = 0;
     virtual void Subscribe(uint32_t topicId, uint32_t funcId) {
-        auto flowManager = Singleton<CFlowManager>::GetInstance();
+        auto* flowManager = Singleton<CFlowManager>::GetInstance();
         flowManager->Subscribe(std::make_tuple(topicId, funcId), [&](const Msg& msg){
             auto inQueueRet = m_MsgQueue.EnQueue(msg);
             if (!inQueueRet) {

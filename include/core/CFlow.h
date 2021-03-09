@@ -31,7 +31,7 @@ class CMsgFlow:public OBEvent<std::function<void(const Msg&)>>{
 
 public:
 
-    CMsgFlow(): queue_(std::bind(&CMsgFlow::Proc, this, std::placeholders::_1)){}
+    CMsgFlow(): queue_([this](auto && param) { Proc(std::forward<decltype(param)>(param)); }){}
 
     void start() {
 
@@ -110,6 +110,7 @@ class CFlowManager{
 
 
         int UnSubscribe(funcid_t) {
+            /// TODO unsub
             return 0;
         }
 

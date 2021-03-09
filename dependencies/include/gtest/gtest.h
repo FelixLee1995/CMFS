@@ -1211,7 +1211,7 @@ class GTEST_API_ TestEventListeners {
   friend class internal::UnitTestImpl;
 
   // Returns repeater that broadcasts the TestEventListener events to all
-  // subscribers.
+  // Subscribers.
   TestEventListener* repeater();
 
   // Sets the default_result_printer attribute to the provided listener.

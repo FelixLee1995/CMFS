@@ -85,7 +85,7 @@ void CMarketPlugin::HandleSub(const Msg &msg)
             SubMarketByOneRule(sessionId, index, instr, marketDataSnapshotSet);
         }
 
-        if (marketDataSnapshotSet.empty() == true)
+        if (marketDataSnapshotSet.empty())
         {
             error_id = 10000;
             error_msg = "Subscribe failed, no such instrument";
@@ -152,12 +152,10 @@ size_t CMarketPlugin::SubMarketByOneRule(SessionIdType sessionid, int16_t index,
 
     }
     else if( wildcard_index != rule.npos)
-    {   
-
-        m_MarketDataManager->SubscribeByRule(index, rule.substr(0, wildcard_index), dataSet);
-
+    {
         /// 模糊匹配
         /// 考虑使用正则进行匹配
+        m_MarketDataManager->SubscribeByRule(index, rule.substr(0, wildcard_index), dataSet);
     }
     else
     {
@@ -174,6 +172,28 @@ void CMarketPlugin::HandleUnsub(const Msg &msg) {}
 
 void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)
 {
+
+    auto* marketData =  (CThostFtdcDepthMarketDataField *)  (msg.Pack + sizeof(ftdc_field_header));
+    //auto sessionId = msg.Header.SessionId;
+
+
+    m_MarketDataManager->UpdateMarketData(*marketData);
+
+    std::bitset<MAX_ONLINE_USERS> subscribers;
+    std::set<SessionIdType> sessionIdSet;
+
+    m_MarketDataManager->GetMarketDataSubsribers(marketData->InstrumentID, subscribers);
+
+
+    m_UserSessionManager->CheckIfSubs(subscribers, sessionIdSet);
+
+    for (auto id:sessionIdSet)
+    {
+        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, id, ftdc_tid_RtnDepthMarketData_snap, CThostFtdcDepthMarketDataField, marketData,
+                         ftdc_tid_RtnDepthMarketData_snap);
+    }
+
+
 
 }
 
