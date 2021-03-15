@@ -12,14 +12,18 @@
 const std::string brokerid = "9999";
 const std::string userid = "123616";
 const std::string pwd = "nanase4ever";
-
-
-
 //const std::string marketfrontAddr = "tcp://180.168.146.187:10110";
 const std::string marketfrontAddr = "tcp://127.0.0.1:17001";
-    
 const std::string appid = "simnow_client_test";
 const std::string authcode = "0000000000000000";
+
+// const std::string brokerid = "2071";
+// const std::string userid = "80186354";
+// const std::string pwd = "asdf852963";
+// const std::string marketfrontAddr = "tcp://180.169.50.131:42213";
+// //const std::string marketfrontAddr = "tcp://127.0.0.1:17001";
+// const std::string appid = "client_LEE121_T1";
+// const std::string authcode = "3WWJKJ";
 
 
 

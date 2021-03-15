@@ -12,7 +12,22 @@ CMarketPlugin::CMarketPlugin(): IPlugin("MarketPlugin")
 
 void CMarketPlugin::Init()
 {
-    spdlog::set_level(spdlog::level::debug);
+    // std::cout << "sizeof CThostFtdcDepthMarketDataField is " << sizeof(CThostFtdcDepthMarketDataField) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataField is " << sizeof(CThostFtdcMarketDataField) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataBaseField is " << sizeof(CThostFtdcMarketDataBaseField) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataStaticField is " << sizeof(CThostFtdcMarketDataStaticField) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataLastMatchField is " << sizeof(CThostFtdcMarketDataLastMatchField) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataBestPriceField is " << sizeof(CThostFtdcMarketDataBestPriceField) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataBid23Field is " << sizeof(CThostFtdcMarketDataBid23Field) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataAsk23Field is " << sizeof(CThostFtdcMarketDataAsk23Field) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataBid45Field is " << sizeof(CThostFtdcMarketDataBid45Field) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataAsk45Field is " << sizeof(CThostFtdcMarketDataAsk45Field) << std::endl;
+    // std::cout << "sizeof CThostFtdcMarketDataUpdateTimeField is " << sizeof(CThostFtdcMarketDataUpdateTimeField) << std::endl;
+    
+    // std::cout << "sizeof CThostFtdcRspUserLoginField is " << sizeof(CThostFtdcRspUserLoginField) << std::endl;
+    // std::cout << "sizeof CThostFtdcRspInfoField is " << sizeof(CThostFtdcRspInfoField) << std::endl;
+    
+
 
     m_UserSessionManager.reset(Singleton<CUserSessionManager>::GetInstance());
     m_MarketDataManager.reset(Singleton<CMarketDataManager>::GetInstance());
@@ -121,10 +136,11 @@ void CMarketPlugin::HandleSub(const Msg &msg)
     }
 
 
+
     /// 4. 发送行情快照
     for (auto marketData : marketDataSnapshotSet) 
         {
-
+            
             if (marketData.OpenPrice == 0)
             {
 
@@ -173,11 +189,11 @@ void CMarketPlugin::HandleUnsub(const Msg &msg) {}
 void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)
 {
 
-    auto* marketData =  (CThostFtdcDepthMarketDataField *)  (msg.Pack + sizeof(ftdc_field_header));
+    auto marketData =  (CMarketDataExtField *)  (msg.Pack);
     //auto sessionId = msg.Header.SessionId;
 
-
-    m_MarketDataManager->UpdateMarketData(*marketData);
+    auto market = (CThostFtdcDepthMarketDataField*) msg.Pack;
+    m_MarketDataManager->UpdateMarketData(*market);
 
     std::bitset<MAX_ONLINE_USERS> subscribers;
     std::set<SessionIdType> sessionIdSet;
@@ -187,12 +203,13 @@ void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)
 
     m_UserSessionManager->CheckIfSubs(subscribers, sessionIdSet);
 
+    std::cout << "size of  CMarketDataExtField is " << sizeof(CMarketDataExtField) << std::endl;
     for (auto id:sessionIdSet)
     {
-        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, id, ftdc_tid_RtnDepthMarketData_snap, CThostFtdcDepthMarketDataField, marketData,
-                         ftdc_tid_RtnDepthMarketData_snap);
+        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, id, ftdc_tid_RtnDepthMarketData_snap, CMarketDataExtField, marketData,
+                         ftdc_fid_DepthMarketDataField);
     }
-
+    
 
 
 }

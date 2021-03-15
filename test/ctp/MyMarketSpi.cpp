@@ -1,4 +1,5 @@
 #include "test/MyMarketSpi.h"
+#include <fstream>
 #include <chrono>
 #include <vector>
 
@@ -85,5 +86,22 @@ void MyMarketSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
 
     std::cout << "timestamp: " << tp.time_since_epoch().count() << "ns"
               << ", OnRtnMarketData, instrumentid: " << pDepthMarketData->InstrumentID
-              << ", lastPrice: " << pDepthMarketData->LastPrice << ", Volume: " << pDepthMarketData->Volume << std::endl;
+              << ", exchangeid: " << pDepthMarketData->ExchangeID << ", exchangeInstID: " << pDepthMarketData->ExchangeInstID
+              << ", lastPrice: " << pDepthMarketData->LastPrice << ", Volume: " << pDepthMarketData->Volume 
+              << ", OpenPrice: " << pDepthMarketData->OpenPrice << ", HighestPrice: " << pDepthMarketData->HighestPrice
+              << ", AveragePrice: " << pDepthMarketData->AveragePrice << ", ClosePrice: " << pDepthMarketData->ClosePrice
+              << ", UpdateTime: " << pDepthMarketData->UpdateTime << ", UpdateMillisec: " << pDepthMarketData->UpdateMillisec
+              << ", ActionDay: " << pDepthMarketData->ActionDay 
+              << std::endl;
+
+    std::cout << "HighestPrice: " << std::hex << *((unsigned long long*)&pDepthMarketData->HighestPrice) << " , size: " << sizeof(pDepthMarketData->HighestPrice) << std::endl;
+    std::cout << "AveragePrice: " << std::hex << *((unsigned long long*)&pDepthMarketData->AveragePrice) << " , size: " << sizeof(pDepthMarketData->AveragePrice) << std::endl;
+
+
+    std::ofstream outFile("marketdata.dat", std::ios::out | std::ios::binary);
+    outFile.write((const char *)pDepthMarketData, sizeof(CThostFtdcDepthMarketDataField));
+    outFile.flush();
+    exit(0);
+
+
 }

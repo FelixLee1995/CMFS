@@ -20,8 +20,6 @@
 
 
 
-
-
 class CMarketPlugin: public IPlugin
 {
 private:

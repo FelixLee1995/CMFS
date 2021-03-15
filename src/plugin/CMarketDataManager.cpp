@@ -64,7 +64,7 @@ int CMarketDataManager::SubscribeByInstrumentID(int16_t index, const std::string
 
     dataSet.insert(iter->second.Data);
     iter->second.Subscribers.set(index);
-
+    std::cout << "after sub is " << iter->second.Subscribers[index] << " count is " <<  iter->second.Subscribers.count() <<std::endl;
     return 1;
 }
 
@@ -95,6 +95,8 @@ void CMarketDataManager::GetMarketDataSubsribers(const std::string &instrumentID
         return;
     }
     subscribers = iter->second.Subscribers;
+    std::cout << "origin subscribers count is " << iter->second.Subscribers.count() << std::endl;
+    std::cout << "subscribers count is " << subscribers.count() << std::endl;
 }
 bool CMarketDataManager::UpdateMarketData(const CThostFtdcDepthMarketDataField & marketDataField)
 {

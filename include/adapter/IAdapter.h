@@ -10,6 +10,8 @@
 #include <string>
 #include "CConfig.hpp"
 #include "core/CFlow.h"
+#include "CLog.h"
+#include "core/singleton.h"
 
 
 #define PUB_BIZ_MSG_TO_PLUGIN(FLOWMANAGER_PTR, TOPIC_ID, FUNC_ID, SESSION_ID, CONTENT, LEN, CNT) \

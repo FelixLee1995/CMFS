@@ -13,6 +13,7 @@
 
 #if defined(__linux__)
     #include <unistd.h>
+    #include <arpa/inet.h>
 #endif 
 
 #if defined(_MSC_VER) || defined(_WIN32) || defined(_WIN64)

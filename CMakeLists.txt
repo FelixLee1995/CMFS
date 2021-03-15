@@ -12,9 +12,9 @@ project(CMFS)
 set(CMAKE_CXX_STANDARD 17)
 
 
-if (UNIX)
-  SET(CMAKE_CXX_FLAGS "-fsanitize=address")
-endif ()
+# if (UNIX)
+#   SET(CMAKE_CXX_FLAGS "-fsanitize=address")
+# endif ()
 
 
 include(FetchContent)
@@ -47,6 +47,8 @@ link_directories(lib)
 #扫描src目录, 获取.c .cpp 源码文件列表
 file(GLOB_RECURSE DIR_SRCS ./src/*.cpp  ./src/*.c)
 set(TEST_CACHE_SRC ./test/test_cache.cpp)
+set(TEST_MARKET_DATA_SRC ./test/test_marketdata.cpp)
+
 file(GLOB_RECURSE TEST_MD_SRC ./test/test_md_sub.cpp ./test/ctp/MyMarketApi.cpp ./test/ctp/MyMarketSpi.cpp)
 
 # 可执行文件输出目录
@@ -57,15 +59,16 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/runtime)
 ADD_EXECUTABLE(cmfs ${DIR_SRCS})
 ADD_EXECUTABLE(test_cache ${TEST_CACHE_SRC})
 ADD_EXECUTABLE(test_md ${TEST_MD_SRC})
+ADD_EXECUTABLE(test_market_data ${TEST_MARKET_DATA_SRC})
 
 # 设置可执行程序的属性
 IF (MSVC)
   set_target_properties(cmfs PROPERTIES CompanyName "国泰君安期货" FileDescription "自研行情前置" FileVersion "1.0.0.0" InternalName "cmfs.exe" LegalCopyright "Copyright (C) 2021" OriginalFilename "cmfs.exe" ProductName "自研行情前置" ProductVersion "1.0.0.0")
 ENDIF ()
 
-target_link_libraries(test_cache gtest.lib)
+target_link_libraries(test_cache gtest)
 target_link_libraries(test_md thostmduserapi_se gtest)
-target_link_libraries(cmfs gtest)
+target_link_libraries(cmfs gtest GtjaMdUserApi)
 IF(UNIX)
   target_link_libraries(test_cache pthread)
   target_link_libraries(test_md pthread )

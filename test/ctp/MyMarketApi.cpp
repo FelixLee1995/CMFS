@@ -39,6 +39,8 @@ void MyMarketApi::Init()
     m_spi = new MyMarketSpi(this);
     m_api->RegisterSpi(m_spi);
 
+    std::cout << "api version is " << m_api->GetApiVersion();
+
     m_api->RegisterFront(const_cast<char *>(m_front_addr.c_str()));
 
     m_api->Init();
@@ -81,17 +83,16 @@ int MyMarketApi::ReqSubscribeMarketData(const std::vector<std::string> instrVec)
     for (int i = 0; i < cnt; i++)
     {
         instrument[i] = new char[31];
-        std::memcpy(instrument[i], instrVec[i].data(), 31);
+        std::strcpy(instrument[i], instrVec[i].data());
     }
 
     res = m_api->SubscribeMarketData(instrument, cnt);
 
 
 
-    for (int i = 0 ; i< cnt ; )
+    for (int i = 0 ; i< cnt ; i++)
     {
         delete[] instrument[i];
-        i++;
     }
 
     delete[] instrument;
