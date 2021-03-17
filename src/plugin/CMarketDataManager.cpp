@@ -95,8 +95,6 @@ void CMarketDataManager::GetMarketDataSubsribers(const std::string &instrumentID
         return;
     }
     subscribers = iter->second.Subscribers;
-    std::cout << "origin subscribers count is " << iter->second.Subscribers.count() << std::endl;
-    std::cout << "subscribers count is " << subscribers.count() << std::endl;
 }
 bool CMarketDataManager::UpdateMarketData(const CThostFtdcDepthMarketDataField & marketDataField)
 {
@@ -114,4 +112,12 @@ bool CMarketDataManager::UpdateMarketData(const CThostFtdcDepthMarketDataField &
 
 
     return true;
+}
+
+void CMarketDataManager::LockedIterFunc(std::function<void(const MarketData &)> f)
+{
+    for (auto market : m_MarketDataMap)
+    {
+        f(market.second);
+    }
 }

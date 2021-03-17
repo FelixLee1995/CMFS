@@ -26,8 +26,8 @@ FetchContent_Declare(googletest
         QUIET            OFF)
 set(gtest_force_shared_crt ON  CACHE INTERNAL "" FORCE)
 set(INSTALL_GTEST          OFF CACHE INTERNAL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-#find_package(GTest CONFIG REQUIRED)
+#FetchContent_MakeAvailable(googletest)
+find_package(GTest CONFIG REQUIRED)
 
 
 
@@ -49,7 +49,7 @@ file(GLOB_RECURSE DIR_SRCS ./src/*.cpp  ./src/*.c)
 set(TEST_CACHE_SRC ./test/test_cache.cpp)
 set(TEST_MARKET_DATA_SRC ./test/test_marketdata.cpp)
 
-file(GLOB_RECURSE TEST_MD_SRC ./test/test_md_sub.cpp ./test/ctp/MyMarketApi.cpp ./test/ctp/MyMarketSpi.cpp)
+set(TEST_MD_SRC ./test/test_md_sub.cpp ./src/apiWrapper/ctp/MyMarketApi.cpp ./src/apiWrapper/ctp/MyMarketSpi.cpp)
 
 # 可执行文件输出目录
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/runtime)
@@ -67,8 +67,8 @@ IF (MSVC)
 ENDIF ()
 
 target_link_libraries(test_cache gtest)
-target_link_libraries(test_md thostmduserapi_se gtest)
-target_link_libraries(cmfs gtest GtjaMdUserApi)
+target_link_libraries(test_md  gtest thostmduserapi_se)
+target_link_libraries(cmfs gtest GtjaMdUserApi thostmduserapi_se thosttraderapi_se)
 IF(UNIX)
   target_link_libraries(test_cache pthread)
   target_link_libraries(test_md pthread )

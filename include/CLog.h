@@ -33,6 +33,8 @@ void SetLogger()
 
     logger->set_pattern("[%Y-%m-%d %H:%M:%S.%f] [%t] [%l] [%s:%#(%!)] %v");
 
+    //spdlog::sinks_init_list sink_list = {logger->sinks().front(), console_log_ptr->sinks().front()};
+
     spdlog::sinks_init_list sink_list = {logger->sinks().front(), console_log_ptr->sinks().front()};
 
     auto mylogger_ = std::make_shared<spdlog::logger>("my_logger", sink_list);

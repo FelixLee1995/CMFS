@@ -14,28 +14,14 @@ using namespace ctp_ftd;
 
 CMockAdapter::CMockAdapter():  IMarketRecvAdapter("MockAdapter"), m_IfWorking(false)
 {
+        SPDLOG_INFO("start MockAdapter");
 
 }
 
 void CMockAdapter::Init()
 {
     m_IfWorking.store(true);
-
-
     m_SendThread = std::make_shared<std::thread>([this] { SendThread(); });
-
-
-    char decoded_buff [2048];
-    unsigned int len = 0;
-    DecodeZero((const char *)bRtnMarket, sizeof(bRtnMarket), decoded_buff, &len);
-
-    std::cout << "decoded len is " << len << " res is ";
-    for (unsigned int i = 0 ; i < len; ++i)
-    {
-        std::cout <<  decoded_buff[i] << ", ";
-    }
-    std::cout << "\nend of decoded" << std::endl;
-
 }
 
 
@@ -73,7 +59,6 @@ void CMockAdapter::SendThread()
         struct timeval time;
         gettimeofday(&time, NULL);
         marketDataField.UpdateMillisec =  htonl(time.tv_usec/1000);
-        SPDLOG_INFO("send marketdata, millisec is {} ,  sizeof marketdata is {}", marketDataField.UpdateMillisec, sizeof(CThostFtdcDepthMarketDataField));
 
         PUB_BIZ_MSG_TO_PLUGIN(m_FlowManagerSptr, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketDataField, sizeof(CMarketDataExtField), 1);
         CommonSleep(1000);

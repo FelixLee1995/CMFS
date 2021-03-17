@@ -5,8 +5,7 @@
 #include "tcp/CTcpServer.h"
 #include "plugin/CUserManagePlugin.h"
 #include "plugin/CMarketPlugin.h"
-#include "adapter/CMockAdapter.h"
-#include "adapter/CUDPAdapter.h"
+#include "adapter/CAdapterManager.h"
 
 
 int main()
@@ -24,13 +23,12 @@ int main()
 
     auto tcpServerPtr = Singleton<CTcpServer>::Instance(1024, port, ctx);
 
-    auto mock_adapter = Singleton<CMockAdapter>::Instance();
-    auto udp_adapter = Singleton<CUdpMarketAdapter>::Instance();
+ 
 
 
     Singleton<CUserSessionManager>::Instance(MAX_ONLINE_USERS);
     Singleton<CMarketDataManager>::Instance();
-    
+    auto adapters = Singleton<CAdapterManager>::Instance();
 
     auto userManagePluginPtr = Singleton<CUserManagePlugin>::Instance();
     auto marketPluginPtr = Singleton<CMarketPlugin>::Instance();
@@ -39,7 +37,7 @@ int main()
     marketPluginPtr->Init();
     tcpServerPtr->Start();
 
-    udp_adapter->Init();
+    adapters->Init();
 
     ctx.run();
 

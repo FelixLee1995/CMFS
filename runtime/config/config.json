@@ -1,6 +1,6 @@
-{"marketSource": {
-        "ip": "127.0.0.1",
-        "port": 18001
+{   "marketSource": {
+        "ip": "180.168.205.206",
+        "port": 42116
     },
     "front": {
         "port": 17001
@@ -12,5 +12,26 @@
     "app": {
         "maxOnlineUsers": 1024,
         "connTimeout": 60
-    }
+    },
+    "adapters": [
+        {
+            "type": "CTP",
+            "path": "tcp://180.168.146.187:10110",
+            "username": "123616",
+            "pwd": "nanase4ever",
+            "brokerid": "9999"
+        },
+        {
+            "type": "UDP",
+            "path": "tcp://180.168.205.206:42116",
+            "username": "00000001",
+            "pwd": "88888888"
+        },
+        {
+            "type": "MOCK",
+            "path": "tcp://180.168.205.206:42116",
+            "username": "00000001",
+            "pwd": "88888888"
+        }
+    ]
 }

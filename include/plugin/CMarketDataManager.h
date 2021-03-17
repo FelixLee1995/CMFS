@@ -49,6 +49,8 @@ class CMarketDataManager
         bool UpdateMarketData(const CThostFtdcDepthMarketDataField &);
 
         void GetMarketDataSubsribers(const std::string &instrumentID, std::bitset<MAX_ONLINE_USERS> &);
+
+        void LockedIterFunc(std::function<void(const MarketData&)>);
 };
 
 

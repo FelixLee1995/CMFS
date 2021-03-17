@@ -48,4 +48,10 @@ public:
         return defaultValue;
     }
 
+    nlohmann::json GetConfigJson()
+    {
+        return m_ConfigJson;
+    }
+    
+
 };

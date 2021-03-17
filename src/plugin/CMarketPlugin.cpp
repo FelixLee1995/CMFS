@@ -203,7 +203,6 @@ void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)
 
     m_UserSessionManager->CheckIfSubs(subscribers, sessionIdSet);
 
-    std::cout << "size of  CMarketDataExtField is " << sizeof(CMarketDataExtField) << std::endl;
     for (auto id:sessionIdSet)
     {
         TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, id, ftdc_tid_RtnDepthMarketData_snap, CMarketDataExtField, marketData,

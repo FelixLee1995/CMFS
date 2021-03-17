@@ -146,9 +146,6 @@ void CTcpSession::DoReadHeader()
                 m_Msg.body_length(0);
             }
             m_Msg.ext_len_ = header->ftd_ext_len;
-
-            std::cout << "parse header success,  headerLen " << MessageWrapper::header_length << ", bodyLen "
-                      << m_Msg.body_length() << ", extLen " << m_Msg.ext_len_ << std::endl;
             do_read_body();
         });
 }
@@ -246,8 +243,6 @@ void CTcpSession::deliver(const MessageWrapper &msg)
     m_MsgQueue.push_back(msg);
     if (!write_in_progress)
     {
-        std::cout << "before do write , threadid is " << std::this_thread::get_id() << std::endl;
-
         DoWrite();
     }
 }

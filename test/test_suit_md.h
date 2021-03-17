@@ -6,7 +6,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include "core/plantformtools.h"
-#include "test/MyMarketApi.h"
+#include "apiWrapper/ctp/MyMarketApi.h"
 
 
 const std::string brokerid = "9999";
