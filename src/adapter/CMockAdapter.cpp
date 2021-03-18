@@ -54,7 +54,7 @@ void CMockAdapter::SendThread()
         marketDataField.AveragePrice = MY_HTONF(50);
         marketDataField.ClosePrice = MY_HTONF(48);
         strcpy(marketDataField.UpdateTime, GetFormatTimeStr9().c_str());
-        strcpy(marketDataField.extField, marketDataField.InstrumentID);
+        //strcpy(marketDataField.extField, marketDataField.InstrumentID);
 
         struct timeval time;
         gettimeofday(&time, NULL);

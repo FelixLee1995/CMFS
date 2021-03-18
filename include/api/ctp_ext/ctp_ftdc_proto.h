@@ -516,7 +516,7 @@ namespace ctp_ftd{
 	TThostFtdcPriceType	AveragePrice;
 	///业务日期
 	TThostFtdcDateType	ActionDay;
-		char extField[162];
+	//char extField[162];
 	};
 
 

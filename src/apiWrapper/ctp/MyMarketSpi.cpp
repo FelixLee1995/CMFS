@@ -92,16 +92,6 @@ void MyMarketSpi::OnRspUnSubMarketData(
 void MyMarketSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
 
-    std::cout << "OnRtnMarketData, instrumentid: " << pDepthMarketData->InstrumentID
-              << ", exchangeid: " << pDepthMarketData->ExchangeID << ", exchangeInstID: " << pDepthMarketData->ExchangeInstID
-              << ", lastPrice: " << pDepthMarketData->LastPrice << ", Volume: " << pDepthMarketData->Volume 
-              << ", OpenPrice: " << pDepthMarketData->OpenPrice << ", HighestPrice: " << pDepthMarketData->HighestPrice
-              << ", AveragePrice: " << pDepthMarketData->AveragePrice << ", ClosePrice: " << pDepthMarketData->ClosePrice
-              << ", UpdateTime: " << pDepthMarketData->UpdateTime << ", UpdateMillisec: " << pDepthMarketData->UpdateMillisec
-              << ", ActionDay: " << pDepthMarketData->ActionDay 
-              << std::endl;
-
-
     CMarketDataExtField marketData;
     strcpy(marketData.ExchangeID, pDepthMarketData->ExchangeID);
     strcpy(marketData.InstrumentID, pDepthMarketData->InstrumentID);

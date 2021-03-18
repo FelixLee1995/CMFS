@@ -20,14 +20,15 @@
             "path": "tcp://10.3.6.221:42117",
             "username": "00000001",
             "pwd": "88888888",
-            "InUse": false
+            "enable": true
         },
         {
             "type": "CTP",
-            "path": "tcp://10.3.1.158:41213",
+            "path": "tcp://101.231.185.61:41213",
+            "brokerid": "7070",
             "username": "00000001",
             "pwd": "88888888",
-            "InUse": true
+            "enable": false
         }
     ]
 }

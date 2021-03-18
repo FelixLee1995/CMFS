@@ -26,8 +26,8 @@ FetchContent_Declare(googletest
         QUIET            OFF)
 set(gtest_force_shared_crt ON  CACHE INTERNAL "" FORCE)
 set(INSTALL_GTEST          OFF CACHE INTERNAL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-#find_package(GTest CONFIG REQUIRED)
+#FetchContent_MakeAvailable(googletest)
+find_package(GTest CONFIG REQUIRED)
 
 
 
@@ -61,10 +61,7 @@ ADD_EXECUTABLE(test_cache ${TEST_CACHE_SRC})
 ADD_EXECUTABLE(test_md ${TEST_MD_SRC})
 ADD_EXECUTABLE(test_market_data ${TEST_MARKET_DATA_SRC})
 
-# 设置可执行程序的属性
-IF (MSVC)
-  set_target_properties(cmfs PROPERTIES CompanyName "国泰君安期货" FileDescription "自研行情前置" FileVersion "1.0.0.0" InternalName "cmfs.exe" LegalCopyright "Copyright (C) 2021" OriginalFilename "cmfs.exe" ProductName "自研行情前置" ProductVersion "1.0.0.0")
-ENDIF ()
+
 
 target_link_libraries(test_cache gtest)
 target_link_libraries(test_md  gtest thostmduserapi_se)

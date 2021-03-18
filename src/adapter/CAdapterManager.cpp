@@ -24,7 +24,7 @@ void CAdapterManager::Init()
     
     for (auto adapterConfig:adapters)
     {
-        auto IfInUse = adapterConfig["InUse"].get<bool>();
+        auto IfInUse = adapterConfig["enable"].get<bool>();
         if (IfInUse)
         {
             auto type = adapterConfig["type"].get<std::string>();
