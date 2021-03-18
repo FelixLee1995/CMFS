@@ -1,5 +1,5 @@
 #include "adapter/CUDPAdapter.h"
-
+#include "utils/Utils.h"
 
 
 
@@ -84,41 +84,47 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
     //           << std::setfill('0') << std::setw(2) << (int)pStamp->Time.Hour << ":" << (int)pStamp->Time.Minite << ":"
     //           << pStamp->Time.Seccond << "." << std::setw(3) << pStamp->Time.MilliSec;
 
-    if (pMBL && MBLLength > 0)
-    {
-        std::cout << "\t" << pMBL[0].BidPrice << "\t" << pMBL[0].BidVolume << "\t" << pMBL[0].AskPrice << "\t"
-                  << pMBL[0].AskVolume;
-    }
+//    if (pMBL && MBLLength > 0)
+//    {
+//        std::cout << "\t" << pMBL[0].BidPrice << "\t" << pMBL[0].BidVolume << "\t" << pMBL[0].AskPrice << "\t"
+//                  << pMBL[0].AskVolume;
+//    }
 
     CMarketDataExtField marketData;
     strcpy(marketData.ExchangeID, ConvertExchange(pInstrument->ExchangeType).c_str());
     strcpy(marketData.InstrumentID, pInstrument->InstrumentID);
-    
+
+
+    int vol = pTradeInfo->Volume;
+    if (strcmp(marketData.InstrumentID, "cu2105") == 0)
+        SPDLOG_INFO("udp recv {}, vol {}", pInstrument->InstrumentID, vol);
+
     if (pTradeInfo)
     {
-        marketData.LastPrice = pTradeInfo->LastPrice;
-        marketData.Turnover = pTradeInfo->Turnover;
-        marketData.OpenInterest = pTradeInfo->OpenInterest;
-        marketData.Volume = pTradeInfo->Volume;
+        marketData.LastPrice = MY_HTONF(pTradeInfo->LastPrice);
+        marketData.Turnover = MY_HTONF(pTradeInfo->Turnover);
+        marketData.OpenInterest = MY_HTONF(pTradeInfo->OpenInterest);
+        marketData.Volume = htonl((int)pTradeInfo->Volume);
     }
+
 
     if (pBaseInfo)
     {
         strcpy(marketData.TradingDay, pBaseInfo->TradingDay);
-        marketData.PreSettlementPrice = pBaseInfo->PreSettlementPrice;
-        marketData.PreClosePrice = pBaseInfo->PreClosePrice;
-        marketData.PreOpenInterest = pBaseInfo->PreOpenInterest;
-        marketData.UpperLimitPrice = pBaseInfo->UpperLimitPrice;
-        marketData.LowerLimitPrice = pBaseInfo->LowerLimitPrice;
+        marketData.PreSettlementPrice = MY_HTONF(pBaseInfo->PreSettlementPrice);
+        marketData.PreClosePrice = MY_HTONF(pBaseInfo->PreClosePrice);
+        marketData.PreOpenInterest = MY_HTONF(pBaseInfo->PreOpenInterest);
+        marketData.UpperLimitPrice = MY_HTONF(pBaseInfo->UpperLimitPrice);
+        marketData.LowerLimitPrice = MY_HTONF(pBaseInfo->LowerLimitPrice);
     }
 
     if (pStaticInfo)
     {
-        marketData.OpenPrice = pStaticInfo->OpenPrice;
-        marketData.ClosePrice = pStaticInfo->ClosePrice;
-        marketData.SettlementPrice = pStaticInfo->SettlementPrice;
-        marketData.HighestPrice = pStaticInfo->HighestPrice;
-        marketData.LowestPrice = pStaticInfo->LowestPrice;
+        marketData.OpenPrice = MY_HTONF(pStaticInfo->OpenPrice);
+        marketData.ClosePrice = MY_HTONF(pStaticInfo->ClosePrice);
+        marketData.SettlementPrice = MY_HTONF(pStaticInfo->SettlementPrice);
+        marketData.HighestPrice = MY_HTONF(pStaticInfo->HighestPrice);
+        marketData.LowestPrice = MY_HTONF(pStaticInfo->LowestPrice);
     }
 
 

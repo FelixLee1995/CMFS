@@ -192,6 +192,15 @@ void CTcpSession::do_read_body()
 
                     switch (topicID)
                     {
+                        case ftdc_fid_SOPT_Req_Init:
+                        {
+                            MessageWrapper msg;
+                            memcpy(msg.data_, bInitRspOpt, sizeof(bInitRspOpt));
+                            msg.body_length_ = sizeof(bInitRspOpt) - 4;
+
+                            deliver(msg);
+                            break;
+                        }
                         case ftdc_fid_ReqInit:
                         {
                             MessageWrapper msg;

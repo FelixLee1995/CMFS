@@ -24,8 +24,13 @@ void CAdapterManager::Init()
     
     for (auto adapterConfig:adapters)
     {
-        auto type = adapterConfig["type"].get<std::string>();
-        Initdapter(type, adapterConfig);
+        auto IfInUse = adapterConfig["InUse"].get<bool>();
+        if (IfInUse)
+        {
+            auto type = adapterConfig["type"].get<std::string>();
+            Initdapter(type, adapterConfig);
+        }
+
     }
     
 }
