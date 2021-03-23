@@ -10,6 +10,7 @@
 
 #include "core/baseheader.h"
 #include <set>
+#include <mutex>
 
 class CUserSessionManager
 {
@@ -18,6 +19,8 @@ private:
     std::vector<std::string> m_AuthorizedUsersVec;
 
     int LoadAuthorizedUsersFromFile();
+
+    std::mutex m_Mutex;
 
 public:
     using Ptr = std::shared_ptr<CUserSessionManager>;
@@ -40,6 +43,10 @@ public:
     bool AddUserSession(SessionIdType sessionID);
 
     bool SubscribeAllBySessionID(SessionIdType sessionID);
+
+    bool UnSubscribeAllBySessionID(SessionIdType sessionID);
+
+    bool HandleUserLogout(SessionIdType sessionID);
 
     ~CUserSessionManager();
 };

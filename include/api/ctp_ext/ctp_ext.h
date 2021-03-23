@@ -54,6 +54,8 @@ enum ftdc_fid_ext_type: uint32_t{
     ftdc_fid_FirstRsp = 0x3028,
     ftdc_fid_ReqLogin = 0x3000,  //12288
     ftdc_fid_RspLogin = 0x3001,  //12289
+	ftdc_fid_ReqUserLogout = 0x3002,//12290
+	ftdc_fid_RspUserLogout = 0x3003,//12291
     ftdc_fid_ReqSub = 0x4401,   //17409
     ftdc_fid_RspSub = 0x4402,   //17410
     ftdc_fid_ReqUnsub = 0x4403, //17411

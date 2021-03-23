@@ -28,8 +28,9 @@ const std::string ExchangeINE = "INE";
 enum class UserSessionStatus
 {
     Login = '0',
-    Timeout = '1',
-    Invalid = '2'
+    Logout = '1',
+    Timeout = '2',
+    Invalid = '3'
 };
 
 
@@ -38,8 +39,7 @@ struct UserSession
     bool IfSubsAll;   /// 是否订阅全部
     bool IfUnsubAll;  /// 是否退订全部
     char Status;      ///登录状态
-    UserSessionIdType UserSessionID;      /// userSessionID
-    SessionIdType SessionID;     /// 套接字FD
+    SessionIdType SessionID;     /// 会话id
     long Timestamp; //标记这个用户， 区别不同登录时间用户重用 UserSessionID
 };
 

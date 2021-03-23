@@ -19,6 +19,9 @@ void CUserManagePlugin::Init()
 {
     Subscribe(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGIN);
     Subscribe(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGOUT);
+    Subscribe(TOPIC_USER_MANAGE, FUNC_REQ_USER_DISCONNECT);
+
+    
 
 }
 void CUserManagePlugin::MsgHandler(const Msg &msg) {
@@ -27,10 +30,17 @@ void CUserManagePlugin::MsgHandler(const Msg &msg) {
             HandleUserLogin(msg);
             break;
         }
-        case FUNC_REQ_USER_LOGOUT: {
+        case FUNC_REQ_USER_DISCONNECT:
+        {
+            HandleUserDisconnect(msg);
+            break;
+        }
+        case FUNC_REQ_USER_LOGOUT:
+        {
             HandleUserLogout(msg);
             break;
         }
+        
         default: {
             SPDLOG_ERROR("NO HANDLER FOR FUNCID: {}", msg.Header.FuncId);
             return;
@@ -119,11 +129,22 @@ std::tuple<int, std::string> CUserManagePlugin::CheckLoginUser(int sessionId, co
         return std::make_tuple((int)LoginErrorID::UserSessionOpFailed, "Failed to add Usersession!");
     }
 
-
+    SPDLOG_INFO("user login success, sessionid: {}", sessionId);
     return std::make_tuple((int)LoginErrorID::OK, "Login Success!");
 }
 
 
 
-void CUserManagePlugin::HandleUserLogout(const Msg &msg) {}
+void CUserManagePlugin::HandleUserLogout(const Msg &msg) 
+{
 
+}
+
+
+void CUserManagePlugin::HandleUserDisconnect(const Msg& msg)
+{
+    auto ret = m_UserSessionManager->HandleUserLogout(msg.Header.SessionId);
+    SPDLOG_INFO("user disconnect, sessionid: {}", msg.Header.SessionId);
+
+    /// TODO reset marketDataManager中 各个item 的subscribers中相应的Index
+}

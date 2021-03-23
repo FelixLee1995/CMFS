@@ -16,6 +16,7 @@
 #include "api/ctp_ext/ctp_ftdc_proto.h"
 #include "api/ctp_ext/ctp_ext.h"
 #include "tcp/CTcpServer.h"
+#include "core/queue/concurrentqueue.h"
 
 using asio::ip::tcp;
 using namespace ctp_ftd;
@@ -77,7 +78,7 @@ private:
 };
 
 
-typedef std::deque<MessageWrapper> MessageQueue;
+typedef moodycamel::ConcurrentQueue<MessageWrapper> MessageQueue;
 
 class CTcpCommunicator
 {
@@ -116,7 +117,7 @@ private:
 
 public:
     using Sptr = std::shared_ptr<CTcpSession>;
-    CTcpSession(tcp::socket socket, std::shared_ptr<CTcpChatroom> chatroom, uint16_t sessionId);
+    CTcpSession(tcp::socket socket, std::shared_ptr<CTcpChatroom> chatroom, int32_t sessionId);
 
     void Start();
     void DoReadHeader();

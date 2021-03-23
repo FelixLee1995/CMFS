@@ -15,7 +15,6 @@ CUserSessionManager::CUserSessionManager(int maxOnlineUser)
         userSession.SessionID = 0;
         userSession.Status = (char) UserSessionStatus::Invalid;
         userSession.Timestamp = 0;
-        userSession.UserSessionID = 0;
         m_UserSessionVec.push_back(userSession);
     }
 
@@ -57,6 +56,8 @@ int CUserSessionManager::LoadAuthorizedUsersFromFile()
 
 bool CUserSessionManager::CheckIfFull()
 {
+    std::lock_guard guard(m_Mutex);
+
     for (auto session: m_UserSessionVec)
     {
         if (session.Status!= (char)UserSessionStatus::Login)
@@ -70,6 +71,7 @@ bool CUserSessionManager::CheckIfFull()
 
 bool CUserSessionManager::CheckIfNewSession(const UserSessionIdType& id)
 {
+    std::lock_guard guard(m_Mutex);
 
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.SessionID == id;});
     if (iter == m_UserSessionVec.end())
@@ -82,6 +84,7 @@ bool CUserSessionManager::CheckIfNewSession(const UserSessionIdType& id)
 
 bool CUserSessionManager::CheckIfAuthorized(const std::string& UserID)
 {
+    
     auto iter = std::find_if(m_AuthorizedUsersVec.begin(), m_AuthorizedUsersVec.end(), [&](const std::string& id){return id == UserID;});
     if (iter == m_AuthorizedUsersVec.end())
     {
@@ -92,6 +95,7 @@ bool CUserSessionManager::CheckIfAuthorized(const std::string& UserID)
 
 bool CUserSessionManager::AddUserSession(SessionIdType sessionid)
 {
+    std::lock_guard guard(m_Mutex);
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.Status != (char)UserSessionStatus::Login;});
     if (iter == m_UserSessionVec.end())
     {
@@ -111,6 +115,8 @@ bool CUserSessionManager::AddUserSession(SessionIdType sessionid)
 
 int CUserSessionManager::CheckIfLogin(const UserSessionIdType &id)
 {
+    std::lock_guard guard(m_Mutex);
+
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), 
         [&](const UserSession& t){return (t.SessionID == id) && (t.Status == (char)UserSessionStatus::Login);});
     
@@ -126,6 +132,7 @@ int CUserSessionManager::CheckIfLogin(const UserSessionIdType &id)
 
 bool CUserSessionManager::SubscribeAllBySessionID(SessionIdType sessionID) 
 {
+    std::lock_guard guard(m_Mutex);
 
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.SessionID == sessionID;});
     if (iter == m_UserSessionVec.end())
@@ -139,15 +146,56 @@ bool CUserSessionManager::SubscribeAllBySessionID(SessionIdType sessionID)
 
     return true;
 }
+
+bool CUserSessionManager::UnSubscribeAllBySessionID(SessionIdType sessionID)
+{
+    std::lock_guard guard(m_Mutex);
+
+    auto iter = std::find_if(
+        m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession &t) { return t.SessionID == sessionID; });
+    if (iter == m_UserSessionVec.end())
+    {
+        SPDLOG_ERROR("Failed to find sesssionid {}", sessionID);
+        return false;
+    }
+
+    iter->IfSubsAll = false;
+
+    return true;
+}
+
 void CUserSessionManager::CheckIfSubs(std::bitset<MAX_ONLINE_USERS> &subscribers, std::set<SessionIdType>& dispatchSet) {
+
+    std::lock_guard guard(m_Mutex);
+
     for (int i = 0; i < MAX_ONLINE_USERS; ++i)
     {
         auto if_subs_all = m_UserSessionVec[i].IfSubsAll;
-        auto if_un_subs_all =  m_UserSessionVec[i].IfUnsubAll;
         auto sub =  subscribers[i];
-        if (!if_un_subs_all && (if_subs_all || sub == true))
+        if (if_subs_all || sub == true)
         {
             dispatchSet.insert(m_UserSessionVec[i].SessionID);
         }
     }
+}
+
+bool CUserSessionManager::HandleUserLogout(SessionIdType sessionID)
+{
+
+    std::lock_guard guard(m_Mutex);
+
+    auto iter = std::find_if(
+        m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession &t) { return t.SessionID == sessionID; });
+
+
+    if (iter==m_UserSessionVec.end())
+    {
+        return false;
+    }
+
+    iter->IfSubsAll = false;
+    iter->IfUnsubAll = true;
+    iter->Status = (char) UserSessionStatus::Logout;
+
+    return true;
 }

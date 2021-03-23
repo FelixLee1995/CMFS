@@ -13,8 +13,8 @@
 
 
 using byte = unsigned char;
-using UserSessionIdType = uint8_t;
-using SessionIdType = uint32_t;
+using UserSessionIdType = int32_t;
+using SessionIdType = int32_t;
 
 
 struct MsgHeader {
@@ -22,7 +22,7 @@ struct MsgHeader {
     uint16_t TopicId;
     uint16_t FuncId;
     uint16_t ContentLen;
-    UserSessionIdType SessionId;
+    SessionIdType SessionId;
 };
 
 

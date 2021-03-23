@@ -12,22 +12,6 @@ CMarketPlugin::CMarketPlugin(): IPlugin("MarketPlugin")
 
 void CMarketPlugin::Init()
 {
-    // std::cout << "sizeof CThostFtdcDepthMarketDataField is " << sizeof(CThostFtdcDepthMarketDataField) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataField is " << sizeof(CThostFtdcMarketDataField) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataBaseField is " << sizeof(CThostFtdcMarketDataBaseField) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataStaticField is " << sizeof(CThostFtdcMarketDataStaticField) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataLastMatchField is " << sizeof(CThostFtdcMarketDataLastMatchField) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataBestPriceField is " << sizeof(CThostFtdcMarketDataBestPriceField) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataBid23Field is " << sizeof(CThostFtdcMarketDataBid23Field) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataAsk23Field is " << sizeof(CThostFtdcMarketDataAsk23Field) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataBid45Field is " << sizeof(CThostFtdcMarketDataBid45Field) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataAsk45Field is " << sizeof(CThostFtdcMarketDataAsk45Field) << std::endl;
-    // std::cout << "sizeof CThostFtdcMarketDataUpdateTimeField is " << sizeof(CThostFtdcMarketDataUpdateTimeField) << std::endl;
-    
-    // std::cout << "sizeof CThostFtdcRspUserLoginField is " << sizeof(CThostFtdcRspUserLoginField) << std::endl;
-    // std::cout << "sizeof CThostFtdcRspInfoField is " << sizeof(CThostFtdcRspInfoField) << std::endl;
-    
-
 
     m_UserSessionManager.reset(Singleton<CUserSessionManager>::GetInstance());
     m_MarketDataManager.reset(Singleton<CMarketDataManager>::GetInstance());
@@ -37,6 +21,9 @@ void CMarketPlugin::Init()
     Subscribe(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SUB);
     Subscribe(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_UNSUB);
     Subscribe(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN);
+    Subscribe(TOPIC_USER_MANAGE, FUNC_REQ_USER_TIMEOUT);
+
+    
     
 }
 void CMarketPlugin::MsgHandler(const Msg &msg)
@@ -76,11 +63,14 @@ void CMarketPlugin::HandleSub(const Msg &msg)
     std::string error_msg = "Subscribe success!";
 
     auto index = m_UserSessionManager->CheckIfLogin(sessionId);
+
+    std::vector<std::string> instrsVec;
+
     if (index>= 0)
     {
 
 
-    std::vector<std::string> instrsVec;
+    
     uint8_t i = 0;    
 
     while (i < cnt)
@@ -121,9 +111,9 @@ void CMarketPlugin::HandleSub(const Msg &msg)
 
     if (error_id == 0)
     {
-        for (auto marketData : marketDataSnapshotSet) 
+        for (auto instr : instrsVec) 
         {
-            memcpy(specField.InstrumentID, marketData.InstrumentID, sizeof(specField.InstrumentID));
+            strcpy(specField.InstrumentID, instr.c_str());
             TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspSubMarketData, CThostFtdcSpecificInstrumentField, &specField, 
                 ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
         }
@@ -135,23 +125,17 @@ void CMarketPlugin::HandleSub(const Msg &msg)
                 ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
     }
 
-
-
     /// 4. 发送行情快照
-    for (auto marketData : marketDataSnapshotSet) 
+    for (auto marketData : marketDataSnapshotSet)
+    {
+        if (marketData.OpenPrice == 0)
         {
-            
-            if (marketData.OpenPrice == 0)
-            {
-
-                continue;
-            }
-            memcpy(specField.InstrumentID, marketData.InstrumentID, sizeof(specField.InstrumentID));
-            TCP_SEND_RTNINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap, CThostFtdcDepthMarketDataField, &marketData, 
-                ftdc_tid_RtnDepthMarketData_snap);
+            continue;
         }
-
-
+        memcpy(specField.InstrumentID, marketData.InstrumentID, sizeof(specField.InstrumentID));
+        TCP_SEND_RTNINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            CThostFtdcDepthMarketDataField, &marketData, ftdc_tid_RtnDepthMarketData_snap);
+    }
 }
 
 
@@ -183,7 +167,100 @@ size_t CMarketPlugin::SubMarketByOneRule(SessionIdType sessionid, int16_t index,
 }
 
 
-void CMarketPlugin::HandleUnsub(const Msg &msg) {}
+size_t CMarketPlugin::UnSubMarketByOneRule(SessionIdType sessionid, int16_t index, const std::string& rule)
+{
+    size_t subs_cnt = 0;
+    auto wildcard_index = rule.find('*');
+    if (rule == "*")
+    {
+        /// 全部取消订阅
+        m_UserSessionManager->UnSubscribeAllBySessionID(sessionid);
+        m_MarketDataManager->UnSubscribeAll(index);
+
+    }
+    else if( wildcard_index != rule.npos)
+    {
+        /// 模糊匹配取消订阅
+        /// 使用正则进行匹配
+        m_MarketDataManager->UnSubscribeByRule(index, rule.substr(0, wildcard_index));
+    }
+    else
+    {
+        /// 使用合约号进行取消订阅
+        m_MarketDataManager->UnSubscribeByInstrumentID(index, rule);
+    }
+
+    return subs_cnt;
+}
+
+
+void CMarketPlugin::HandleUnsub(const Msg &msg) 
+{
+    /// 1. parse req field, 得到订阅参数
+    auto sessionId = msg.Header.SessionId;
+    auto cnt = msg.Header.Count;
+
+
+    std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> marketDataSnapshotSet;
+
+
+    /// 2. 根据订阅参数分别进行订阅
+    int error_id = 0;
+    std::string error_msg = "UnSubscribe success!";
+
+    auto index = m_UserSessionManager->CheckIfLogin(sessionId);
+
+    std::vector<std::string> instrsVec;
+
+    if (index >= 0)
+    {
+        uint8_t i = 0;
+
+        while (i < cnt)
+        {
+            auto field = (CThostFtdcSpecificInstrumentField *)(msg.Pack + sizeof(ftdc_field_header) +
+                i * (sizeof(ftdc_field_header) + sizeof(CThostFtdcSpecificInstrumentField)));
+            instrsVec.emplace_back(field->InstrumentID);
+            i++;
+            if (strcmp(field->InstrumentID, "*") == 0)
+            {
+                break;
+            }
+        }
+
+        for (auto instr : instrsVec)
+        {
+            UnSubMarketByOneRule(sessionId, index, instr);
+        }
+    }
+    else
+    {
+        error_id = 6;  ///TODO　定义同一的功能号
+        error_msg = "User not login yet";
+    }
+
+    /// 3. 发送订阅应答
+    /// 取消订阅成功， 发送行情取消订阅应答
+
+    CThostFtdcSpecificInstrumentField specField = {0};
+
+    if (error_id == 0)
+    {
+        for (auto instr : instrsVec)
+        {
+            strcpy(specField.InstrumentID, instr.c_str());
+            TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspUnSubMarketData,
+                CThostFtdcSpecificInstrumentField, &specField, ftdc_fid_SpecificInstrumentField, error_id,
+                error_msg.c_str());
+        }
+    }
+    /// 订阅失败， 只发送一条
+    else
+    {
+        TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspUnSubMarketData,
+            CThostFtdcSpecificInstrumentField, &specField, ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
+    }
+}
 
 
 void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)

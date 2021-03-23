@@ -33,6 +33,7 @@ void InitEnv()
 
     flowManager->AddFlow(std::make_tuple(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGIN));
     flowManager->AddFlow(std::make_tuple(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGOUT));
+    flowManager->AddFlow(std::make_tuple(TOPIC_USER_MANAGE, FUNC_REQ_USER_DISCONNECT));
 
 
 

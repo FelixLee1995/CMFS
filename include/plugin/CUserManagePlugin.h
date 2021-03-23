@@ -44,6 +44,7 @@ public:
     void MsgHandler(const Msg &msg) override;
     void HandleUserLogin(const Msg &msg);
     void HandleUserLogout(const Msg &msg);
+    void HandleUserDisconnect(const Msg& msg);
     std::tuple<int, std::string> CheckLoginUser(int sessionID, const CThostFtdcReqUserLoginField* reqField);
 
 };

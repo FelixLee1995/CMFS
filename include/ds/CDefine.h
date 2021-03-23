@@ -31,6 +31,8 @@ const FUNCID_TYPE FUNC_REQ_MARKET_SNAPSHOT_RTN = 0x2010;    /// 发送行情快�
 
 const FUNCID_TYPE FUNC_REQ_USER_LOGIN = 0x3001;     /// 客户端请求登录
 const FUNCID_TYPE FUNC_REQ_USER_LOGOUT = 0x3002;     /// 客户端请求登出
+const FUNCID_TYPE FUNC_REQ_USER_TIMEOUT = 0x3003;     /// 客户端连接超时
+const FUNCID_TYPE FUNC_REQ_USER_DISCONNECT = 0x3004;     /// 客户端连接断开
 
 
 

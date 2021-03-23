@@ -142,7 +142,7 @@ do {  \
 class CTcpServer
 {
     private:
-        std::atomic<uint16_t> m_SessionIdx;
+        std::atomic<int32_t> m_SessionIdx;
         std::atomic_bool m_IsWorking;
         std::size_t m_MaxOnlineUsers;
         int m_Port;

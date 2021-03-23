@@ -45,6 +45,10 @@ class CMarketDataManager
         int SubscribeByInstrumentID(int16_t index, const std::string& instrumentID, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> &dataSet);
         int SubscribeByRule(int16_t index, const std::string& rule, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> &dataSet);
 
+        int UnSubscribeByInstrumentID(int16_t index, const std::string &instrumentID);
+        int UnSubscribeByRule(int16_t index, const std::string &rule);
+        int UnSubscribeAll(int16_t index);
+
         // 用新分发的行情更新内存数据， 若更新， 则返回true， 若为新增合约， 则返回false
         bool UpdateMarketData(const CThostFtdcDepthMarketDataField &);
 

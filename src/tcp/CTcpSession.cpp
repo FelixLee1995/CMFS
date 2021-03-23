@@ -105,9 +105,9 @@ void MessageWrapper::encode_header()
 
 void CTcpChatroom::join(communitor_ptr participant)
 {
-    m_Communicators.insert(participant);
-    for (auto msg: m_MsgQueue)
-        participant->deliver(msg);
+    // m_Communicators.insert(participant);
+    // for (auto msg: m_MsgQueue)
+    //     participant->deliver(msg);
 }
 
 void CTcpChatroom::leave(communitor_ptr participant)
@@ -118,7 +118,7 @@ void CTcpChatroom::leave(communitor_ptr participant)
 
 
 
-CTcpSession::CTcpSession(tcp::socket socket, std::shared_ptr<CTcpChatroom> chatroom, uint16_t sessionId)
+CTcpSession::CTcpSession(tcp::socket socket, std::shared_ptr<CTcpChatroom> chatroom, int32_t sessionId)
     : m_Socket(std::move(socket)), m_ChatroomPtr(chatroom), m_RecvBuffer(), m_SessionId(sessionId)
 {
     m_Server.reset(Singleton<CTcpServer>::GetInstance());
@@ -135,6 +135,21 @@ void CTcpSession::DoReadHeader()
     auto self(shared_from_this());
     asio::async_read(m_Socket, asio::buffer(m_Msg.data(), MessageWrapper::header_length),
         [this, self](asio::error_code ec, std::size_t /*length*/) {
+
+
+            if (ec)
+            {
+                /// ec 表示读取错误
+                SPDLOG_ERROR("asio read failed: {}", ec.message());
+
+                
+
+                PUB_BIZ_MSG_TO_PLUGIN(
+                                m_Server, TOPIC_USER_MANAGE, FUNC_REQ_USER_DISCONNECT, m_SessionId, nullptr, 0, 1);
+                /// TODO　发送到业务层。　通知客户下线
+                return;
+            }
+
             ftd_header *header = (ftd_header *)m_Msg.data();
             header->ftd_content_len = ntohs(header->ftd_content_len);
             if (header->ftd_content_len > 0)
@@ -224,10 +239,23 @@ void CTcpSession::do_read_body()
                                 contenLen, cnt);
                             break;
                         }
+
+                         case ftdc_fid_ReqUserLogout:
+                        {
+                            PUB_BIZ_MSG_TO_PLUGIN(m_Server, TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGOUT, m_SessionId, content,
+                                contenLen, cnt);
+                            break;
+                        }
                         case ftdc_fid_ReqSub:
                         {
                             PUB_BIZ_MSG_TO_PLUGIN(
                                 m_Server, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SUB, m_SessionId, content, contenLen, cnt);
+                            break;
+                        }
+                        case ftdc_fid_ReqUnsub:
+                        {
+                            PUB_BIZ_MSG_TO_PLUGIN(
+                                m_Server, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_UNSUB, m_SessionId, content, contenLen, cnt);
                             break;
                         }
                         default:
@@ -248,26 +276,27 @@ void CTcpSession::do_read_body()
 
 void CTcpSession::deliver(const MessageWrapper &msg)
 {
-    bool write_in_progress = !m_MsgQueue.empty();
-    m_MsgQueue.push_back(msg);
-    if (!write_in_progress)
-    {
-        DoWrite();
-    }
+    //bool write_in_progress = !m_MsgQueue.size_approx;
+    m_MsgQueue.enqueue(msg);
+ 
+    DoWrite();
+    
 }
 
 void CTcpSession::DoWrite()
 {
     auto self(shared_from_this());
-    asio::async_write(m_Socket, asio::buffer(m_MsgQueue.front().data(), m_MsgQueue.front().length()),
+    MessageWrapper msg;
+    auto ret = m_MsgQueue.try_dequeue(msg);
+    if (!ret)
+    {
+        return;
+    }
+    asio::async_write(m_Socket, asio::buffer(msg.data(), msg.length()),
         [this, self](asio::error_code ec, std::size_t /*length*/) {
             if (!ec)
             {
-                m_MsgQueue.pop_front();
-                if (!m_MsgQueue.empty())
-                {
-                    DoWrite();
-                }
+                DoWrite();
             }
             else
             {

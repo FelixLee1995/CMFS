@@ -35,11 +35,10 @@ void CTcpServer::DoAccept()
         if (!ec)
         {
             SPDLOG_INFO("socketfd is {}", socket.native_handle());
-            m_SessionIdx = (++m_SessionIdx)% UINT16_MAX;               //idx不断循环自增， 避免和socketfd无法对应
+            m_SessionIdx = (++m_SessionIdx)% INT32_MAX;               //idx不断循环自增， 避免和socketfd无法对应
             auto session = std::make_shared<CTcpSession>(std::move(socket), m_ChatroomPtr, m_SessionIdx);
             session->Start();
-
-            m_SessionMap.emplace(m_SessionIdx, session);
+            m_SessionMap.emplace(m_SessionIdx, session);  /// TODO  断线时候，  从sessionMap中删除
         }
         DoAccept();
     });
