@@ -24,7 +24,7 @@
         },
         {
             "type": "CTP",
-            "path": "tcp://180.168.146.187:10110",
+            "path": "tcp://180.168.146.187:10131",
             "brokerid": "9999",
             "username": "123616",
             "pwd": "nanase4ever",

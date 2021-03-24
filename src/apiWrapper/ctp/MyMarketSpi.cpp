@@ -91,6 +91,8 @@ void MyMarketSpi::OnRspUnSubMarketData(
 
 void MyMarketSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
+    SPDLOG_INFO("market record, instrid: {}, price: {}, vol: {}, updateTime: {}", pDepthMarketData->InstrumentID,
+        pDepthMarketData->LastPrice, pDepthMarketData->Volume, pDepthMarketData->UpdateTime);
 
     CMarketDataExtField marketData;
     strcpy(marketData.ExchangeID, pDepthMarketData->ExchangeID);
