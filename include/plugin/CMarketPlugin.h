@@ -34,7 +34,7 @@ public:
     void HandleUnsub(const Msg &msg);
     void HandleMarketDataRtn(const Msg &msg);
 
-    size_t SubMarketByOneRule(SessionIdType sessionID, int16_t index, const std::string& rule, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp>& dataSet);
+    size_t SubMarketByOneRule(SessionIdType sessionID, int16_t index, const std::string& rule, std::set<CMarketDataExtField, MarketDataCmp>& dataSet);
 
     size_t UnSubMarketByOneRule(SessionIdType sessionID, int16_t index, const std::string& rule);
 

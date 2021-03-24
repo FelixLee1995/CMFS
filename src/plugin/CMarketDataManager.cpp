@@ -44,7 +44,7 @@ size_t CMarketDataManager::LoadInstrumentFromCSV(const std::string& filePath)
     return instr_count;
 }
 
-void CMarketDataManager::GetAllValidMarketData(std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> &dataSet) 
+void CMarketDataManager::GetAllValidMarketData(std::set<CMarketDataExtField, MarketDataCmp> &dataSet) 
 {
     for (auto& data: m_MarketDataMap)
     {
@@ -52,7 +52,7 @@ void CMarketDataManager::GetAllValidMarketData(std::set<CThostFtdcDepthMarketDat
     }
 }
 
-int CMarketDataManager::SubscribeByInstrumentID(int16_t index, const std::string &instrumentID, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> &dataSet)
+int CMarketDataManager::SubscribeByInstrumentID(int16_t index, const std::string &instrumentID, std::set<CMarketDataExtField, MarketDataCmp> &dataSet)
 {
     ///
     auto iter = m_MarketDataMap.find(instrumentID);
@@ -85,7 +85,7 @@ int CMarketDataManager::UnSubscribeByInstrumentID(int16_t index, const std::stri
 
 
 int CMarketDataManager::SubscribeByRule(
-    int16_t index, const std::string &rule, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> &dataSet)
+    int16_t index, const std::string &rule, std::set<CMarketDataExtField, MarketDataCmp> &dataSet)
 {
     int cnt = 0;
     for (auto &marketData : m_MarketDataMap)
@@ -141,7 +141,7 @@ void CMarketDataManager::GetMarketDataSubsribers(const std::string &instrumentID
     }
     subscribers = iter->second.Subscribers;
 }
-bool CMarketDataManager::UpdateMarketData(const CThostFtdcDepthMarketDataField & marketDataField)
+bool CMarketDataManager::UpdateMarketData(const CMarketDataExtField & marketDataField)
 {
     auto iter = m_MarketDataMap.find(marketDataField.InstrumentID);
     if (iter == m_MarketDataMap.end())

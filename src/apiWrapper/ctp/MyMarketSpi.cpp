@@ -116,6 +116,7 @@ void MyMarketSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
     marketData.HighestPrice = MY_HTONF(pDepthMarketData->HighestPrice);
     marketData.LowestPrice = MY_HTONF(pDepthMarketData->LowestPrice);
 
+    strcpy(marketData.UpdateTime, pDepthMarketData->UpdateTime);
     strcpy(marketData.ActionDay, pDepthMarketData->ActionDay);
 
     PUB_BIZ_MSG_TO_PLUGIN(m_FlowManager, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketData, sizeof(CMarketDataExtField), 1);

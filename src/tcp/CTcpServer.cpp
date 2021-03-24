@@ -38,7 +38,10 @@ void CTcpServer::DoAccept()
             m_SessionIdx = (++m_SessionIdx)% INT32_MAX;               //idx不断循环自增， 避免和socketfd无法对应
             auto session = std::make_shared<CTcpSession>(std::move(socket), m_ChatroomPtr, m_SessionIdx);
             session->Start();
-            m_SessionMap.emplace(m_SessionIdx, session);  /// TODO  断线时候，  从sessionMap中删除
+            {
+                std::lock_guard<std::mutex> guard(m_Mutex);
+                m_SessionMap.emplace(m_SessionIdx, session);  /// TODO  断线时候，  从sessionMap中删除
+            }
         }
         DoAccept();
     });
@@ -52,8 +55,10 @@ int CTcpServer::PubBizMsg(Msg msg)
 }
 
 
-size_t CTcpServer::SendMsg(char * data, unsigned int len, SessionIdType sessionId, TOPICID_TYPE topicId)
-{
+int CTcpServer::SendMsg(char * data, unsigned int len, SessionIdType sessionId, TOPICID_TYPE topicId)
+{   
+    std::lock_guard<std::mutex> guard(m_Mutex);
+
     auto session_iter = m_SessionMap.find(sessionId);
 
     if (session_iter == m_SessionMap.end())

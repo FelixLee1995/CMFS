@@ -11,6 +11,7 @@
 
 #include <atomic>
 #include <map>
+#include <mutex>
 #include "asio.hpp"
 #include "CTcpSession.h"
 #include "core/CFlow.h"
@@ -150,7 +151,7 @@ class CTcpServer
         asio::ip::tcp::acceptor m_Acceptor;
         std::shared_ptr<CTcpChatroom> m_ChatroomPtr;
         CFlowManager::Sptr m_FlowManager;
-                
+        std::mutex m_Mutex;
     public:
         using Sptr = std::shared_ptr<CTcpServer>;
         CTcpServer(std::size_t maxOnlineUsers, int port, asio::io_context& ctx);
@@ -159,7 +160,7 @@ class CTcpServer
         void Stop();
         void DoAccept();
         int PubBizMsg(Msg msg);
-        size_t SendMsg(char * data, unsigned int len, SessionIdType sessionId, TOPICID_TYPE topicId);
+        int SendMsg(char * data, unsigned int len, SessionIdType sessionId, TOPICID_TYPE topicId);
 };
 
 

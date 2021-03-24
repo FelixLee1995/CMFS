@@ -18,7 +18,7 @@
 class MarketDataCmp
 {   
     public: 
-    bool operator()(const CThostFtdcDepthMarketDataField& left, const CThostFtdcDepthMarketDataField& right) const
+    bool operator()(const CMarketDataExtField& left, const CMarketDataExtField& right) const
     {
         return left.InstrumentID < right.InstrumentID;
     }
@@ -41,16 +41,16 @@ class CMarketDataManager
         using Sptr = std::shared_ptr<CMarketDataManager>;
         CMarketDataManager();
         ~CMarketDataManager();
-        void GetAllValidMarketData(std::set<CThostFtdcDepthMarketDataField, MarketDataCmp>& dataSet);        
-        int SubscribeByInstrumentID(int16_t index, const std::string& instrumentID, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> &dataSet);
-        int SubscribeByRule(int16_t index, const std::string& rule, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> &dataSet);
+        void GetAllValidMarketData(std::set<CMarketDataExtField, MarketDataCmp>& dataSet);        
+        int SubscribeByInstrumentID(int16_t index, const std::string& instrumentID, std::set<CMarketDataExtField, MarketDataCmp> &dataSet);
+        int SubscribeByRule(int16_t index, const std::string& rule, std::set<CMarketDataExtField, MarketDataCmp> &dataSet);
 
         int UnSubscribeByInstrumentID(int16_t index, const std::string &instrumentID);
         int UnSubscribeByRule(int16_t index, const std::string &rule);
         int UnSubscribeAll(int16_t index);
 
         // 用新分发的行情更新内存数据， 若更新， 则返回true， 若为新增合约， 则返回false
-        bool UpdateMarketData(const CThostFtdcDepthMarketDataField &);
+        bool UpdateMarketData(const CMarketDataExtField &);
 
         void GetMarketDataSubsribers(const std::string &instrumentID, std::bitset<MAX_ONLINE_USERS> &);
 

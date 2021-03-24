@@ -55,7 +55,7 @@ void CMarketPlugin::HandleSub(const Msg &msg)
     auto cnt = msg.Header.Count;
 
 
-    std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> marketDataSnapshotSet;
+    std::set<CMarketDataExtField, MarketDataCmp> marketDataSnapshotSet;
 
 
     /// 2. 根据订阅参数分别进行订阅
@@ -125,22 +125,22 @@ void CMarketPlugin::HandleSub(const Msg &msg)
                 ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
     }
 
-    /// 4. 发送行情快照
+    // 4. 发送行情快照
     for (auto marketData : marketDataSnapshotSet)
     {
-        if (marketData.OpenPrice == 0)
-        {
-            continue;
-        }
-        memcpy(specField.InstrumentID, marketData.InstrumentID, sizeof(specField.InstrumentID));
-        TCP_SEND_RTNINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-            CThostFtdcDepthMarketDataField, &marketData, ftdc_tid_RtnDepthMarketData_snap);
+        // if (marketData.OpenPrice == 0)
+        // {
+        //     continue;
+        // }
+        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            CMarketDataExtField, &marketData, ftdc_fid_DepthMarketDataField);
+
     }
 }
 
 
 
-size_t CMarketPlugin::SubMarketByOneRule(SessionIdType sessionid, int16_t index, const std::string& rule, std::set<CThostFtdcDepthMarketDataField, MarketDataCmp>& dataSet)
+size_t CMarketPlugin::SubMarketByOneRule(SessionIdType sessionid, int16_t index, const std::string& rule, std::set<CMarketDataExtField, MarketDataCmp>& dataSet)
 {
     size_t subs_cnt = 0;
     auto wildcard_index = rule.find('*');
@@ -200,8 +200,6 @@ void CMarketPlugin::HandleUnsub(const Msg &msg)
     auto sessionId = msg.Header.SessionId;
     auto cnt = msg.Header.Count;
 
-
-    std::set<CThostFtdcDepthMarketDataField, MarketDataCmp> marketDataSnapshotSet;
 
 
     /// 2. 根据订阅参数分别进行订阅
@@ -266,11 +264,9 @@ void CMarketPlugin::HandleUnsub(const Msg &msg)
 void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)
 {
 
-    auto marketData =  (CMarketDataExtField *)  (msg.Pack);
-    //auto sessionId = msg.Header.SessionId;
 
-    auto market = (CThostFtdcDepthMarketDataField*) msg.Pack;
-    m_MarketDataManager->UpdateMarketData(*market);
+    auto marketData = (CMarketDataExtField*) msg.Pack;
+    m_MarketDataManager->UpdateMarketData(*marketData);
 
     std::bitset<MAX_ONLINE_USERS> subscribers;
     std::set<SessionIdType> sessionIdSet;
