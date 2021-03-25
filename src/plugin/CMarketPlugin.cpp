@@ -126,16 +126,24 @@ void CMarketPlugin::HandleSub(const Msg &msg)
     }
 
     // 4. 发送行情快照
-    for (auto marketData : marketDataSnapshotSet)
+    std::vector<CMarketDataExtField> dataVec;
+    dataVec.reserve(10);
+    for(auto iter = marketDataSnapshotSet.begin();iter!=marketDataSnapshotSet.end(); iter++)
     {
-        // if (marketData.OpenPrice == 0)
-        // {
-        //     continue;
-        // }
-        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-            CMarketDataExtField, &marketData, ftdc_fid_DepthMarketDataField);
+        if (iter->OpenPrice != 0)
+        {
+            dataVec.push_back(*iter);
+        }
+        
+        if (dataVec.size() >= 10 || iter == marketDataSnapshotSet.end())
+        {
+            TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+            dataVec.clear();
+        }
 
     }
+    
 }
 
 

@@ -70,9 +70,9 @@ do {  \
 
 #define TCP_SEND_RTNINFO(TOPICID, TCP_SERVER_PTR, SESSIONID, FTDC_TID, SPEC_RSP_INFO_FIELD_TYPE, SPEC_RSP_INFO_FIELD_PTR,  SPEC_RSP_FID)     \
 do {  \
-    char oriData[2048] = {0};  \
+    char oriData[4096] = {0};  \
     unsigned int oriLen = sizeof(ftdc_field_header) + sizeof(SPEC_RSP_INFO_FIELD_TYPE) + sizeof(ftdc_header);  \
-    char encodedData[2048] = {0};  \
+    char encodedData[4096] = {0};  \
     unsigned int encodedLen = 0;  \
     char* data =  oriData; \
     auto  ftdc_header_s = (ftdc_header *)data;    \
@@ -137,6 +137,46 @@ do {  \
     ftdc_crpheader_s->method = ftdc_cmp_none; \
     auto senLen = oriLen + sizeof(ftd_header) + sizeof(ftdc_crpheader); \
     TCP_SERVER_PTR->SendMsg(oriData, senLen, SESSIONID, TOPICID);  \
+}while(0) \
+
+
+
+#define TCP_SEND_MULTI_RTNINFO(TOPICID, TCP_SERVER_PTR, SESSIONID, FTDC_TID, SPEC_RSP_INFO_FIELD_TYPE, SPEC_RSP_INFO_FIELD_PTR, CNT,  SPEC_RSP_FID)     \
+do {  \
+    char oriData[4096] = {0};  \
+    unsigned int oriLen = sizeof(ftdc_field_header) + sizeof(SPEC_RSP_INFO_FIELD_TYPE) + sizeof(ftdc_header);  \
+    char encodedData[4096] = {0};  \
+    unsigned int encodedLen = 0;  \
+    char* data =  oriData; \
+    auto  ftdc_header_s = (ftdc_header *)data;    \
+    ftdc_header_s->ftdc_version = ftdc_version_cur;  \
+    ftdc_header_s->ftdc_chain = ftd_chain_last; \
+    ftdc_header_s->ftdc_topic_id = htonl(FTDC_TID);  \
+    ftdc_header_s->ftdc_seq_series = htons(ftdc_sid_none);  \
+    ftdc_header_s->ftdc_seq_no = htonl(0);   \
+    ftdc_header_s->ftdc_field_count = htons(cnt);   \
+    ftdc_header_s->ftdc_content_len = htons(sizeof(ftdc_field_header) + cnt *sizeof(SPEC_RSP_INFO_FIELD_TYPE)); \
+    ftdc_header_s->ftdc_req_id = htonl(0);  \
+    data += sizeof(ftdc_header);   \
+    for (auto i = 0 ;i <cnt;++i) \
+    {    \
+        auto header1 = (ftdc_field_header *)data; \
+    header1->field_id = htons(SPEC_RSP_FID); \
+    header1->field_len = htons(sizeof(SPEC_RSP_INFO_FIELD_TYPE)); \
+    data += sizeof(ftdc_field_header); \
+    memcpy(data, SPEC_RSP_INFO_FIELD_PTR + i, sizeof(SPEC_RSP_INFO_FIELD_TYPE)); \
+    data += sizeof(SPEC_RSP_INFO_FIELD_TYPE); \
+    }\
+    EncodeZero(oriData, oriLen, encodedData +  sizeof(ftd_header) + sizeof(ftdc_crpheader), &encodedLen); \
+    auto ftd_header_s = (ftd_header*) encodedData; \
+    ftd_header_s->ftd_type = ftd_type_compressed; \
+    ftd_header_s->ftd_ext_len = 0; \
+    ftd_header_s->ftd_content_len = htons(encodedLen + sizeof(ftdc_crpheader)); \
+    auto ftdc_crpheader_s = (ftdc_crpheader*)(encodedData + sizeof(ftd_header)); \
+    ftdc_crpheader_s->protocol = ftdc_crp_protocol; \
+    ftdc_crpheader_s->method = ftdc_cmp_compresszero; \
+    auto senLen = encodedLen + sizeof(ftd_header) + sizeof(ftdc_crpheader); \
+    TCP_SERVER_PTR->SendMsg(encodedData, senLen, SESSIONID, TOPICID);  \
 }while(0) \
 
 

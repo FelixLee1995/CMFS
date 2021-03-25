@@ -17,6 +17,7 @@
 #include "api/ctp_ext/ctp_ext.h"
 #include "tcp/CTcpServer.h"
 #include "core/queue/concurrentqueue.h"
+#include "ds/common.h"
 
 using asio::ip::tcp;
 using namespace ctp_ftd;
@@ -90,25 +91,11 @@ public:
 typedef std::shared_ptr<CTcpCommunicator> communitor_ptr;
 
 
-class CTcpChatroom
-{
-public:
-  void join(communitor_ptr participant);
-
-  void leave(communitor_ptr participant);
-
-private:
-  std::set<communitor_ptr> m_Communicators;
-  enum { max_recent_msgs = 128 };
-  MessageQueue m_MsgQueue;
-};
-
 
 class CTcpSession : public CTcpCommunicator, public std::enable_shared_from_this<CTcpSession>
 {
 private:
     tcp::socket m_Socket;
-    std::shared_ptr<CTcpChatroom> m_ChatroomPtr;
     std::shared_ptr<CTcpServer> m_Server;
     CRevcBuffer m_RecvBuffer;
     MessageWrapper m_Msg;
@@ -117,7 +104,7 @@ private:
 
 public:
     using Sptr = std::shared_ptr<CTcpSession>;
-    CTcpSession(tcp::socket socket, std::shared_ptr<CTcpChatroom> chatroom, int32_t sessionId);
+    CTcpSession(tcp::socket socket, SessionIdType sessionId);
 
     void Start();
     void DoReadHeader();

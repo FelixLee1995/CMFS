@@ -1,6 +1,7 @@
 #include "tcp/CTcpServer.h"
 #include "spdlog/spdlog.h"
 #include "core/singleton.h"
+#include "ds/common.h"
 
 CTcpServer::CTcpServer(std::size_t maxOnlineUsers, int port, asio::io_context& ctx):
     m_SessionIdx(0),
@@ -12,7 +13,6 @@ CTcpServer::CTcpServer(std::size_t maxOnlineUsers, int port, asio::io_context& c
     
 {
     m_FlowManager.reset(Singleton<CFlowManager>::GetInstance());
-    m_ChatroomPtr = std::make_shared<CTcpChatroom>();
     DoAccept();
     SPDLOG_INFO("after doAccept");
 }
@@ -36,7 +36,7 @@ void CTcpServer::DoAccept()
         {
             SPDLOG_INFO("socketfd is {}", socket.native_handle());
             m_SessionIdx = (++m_SessionIdx)% INT32_MAX;               //idx不断循环自增， 避免和socketfd无法对应
-            auto session = std::make_shared<CTcpSession>(std::move(socket), m_ChatroomPtr, m_SessionIdx);
+            auto session = std::make_shared<CTcpSession>(std::move(socket), m_SessionIdx);
             session->Start();
             {
                 std::lock_guard<std::mutex> guard(m_Mutex);

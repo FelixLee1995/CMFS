@@ -103,30 +103,17 @@ void MessageWrapper::encode_header()
     std::memcpy(data_, header, header_length);
 }
 
-void CTcpChatroom::join(communitor_ptr participant)
-{
-    // m_Communicators.insert(participant);
-    // for (auto msg: m_MsgQueue)
-    //     participant->deliver(msg);
-}
-
-void CTcpChatroom::leave(communitor_ptr participant)
-{
-    m_Communicators.erase(participant);
-}
 
 
 
-
-CTcpSession::CTcpSession(tcp::socket socket, std::shared_ptr<CTcpChatroom> chatroom, int32_t sessionId)
-    : m_Socket(std::move(socket)), m_ChatroomPtr(chatroom), m_RecvBuffer(), m_SessionId(sessionId)
+CTcpSession::CTcpSession(tcp::socket socket, SessionIdType sessionId)
+    : m_Socket(std::move(socket)), m_RecvBuffer(), m_SessionId(sessionId)
 {
     m_Server.reset(Singleton<CTcpServer>::GetInstance());
 }
 
 void CTcpSession::Start()
 {
-    m_ChatroomPtr->join(shared_from_this());
     DoReadHeader();
 }
 
@@ -267,10 +254,7 @@ void CTcpSession::do_read_body()
 
                 DoReadHeader();
             }
-            else
-            {
-                m_ChatroomPtr->leave(shared_from_this());
-            }
+          
         });
 }
 
@@ -298,9 +282,6 @@ void CTcpSession::DoWrite()
             {
                 DoWrite();
             }
-            else
-            {
-                m_ChatroomPtr->leave(shared_from_this());
-            }
+       
         });
 }
