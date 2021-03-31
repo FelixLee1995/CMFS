@@ -26,8 +26,8 @@ FetchContent_Declare(googletest
         QUIET            OFF)
 set(gtest_force_shared_crt ON  CACHE INTERNAL "" FORCE)
 set(INSTALL_GTEST          OFF CACHE INTERNAL "" FORCE)
-#FetchContent_MakeAvailable(googletest)
-find_package(GTest CONFIG REQUIRED)
+FetchContent_MakeAvailable(googletest)
+#find_package(GTest CONFIG REQUIRED)
 
 
 

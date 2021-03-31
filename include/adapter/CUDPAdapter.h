@@ -13,6 +13,7 @@
 #include "IAdapter.h"
 #include <string>
 #include <iomanip>
+#include "plugin/CMarketDataManager.h"
 
 
 using namespace GtjaMdV3;
@@ -23,6 +24,7 @@ class MyUdpApi: public GtjaMdUserSpi
 private:
     GtjaMdUserApi* pApi = NULL;
 	CFlowManager::Sptr m_FlowManager;
+    CMarketDataManager::Sptr m_MarketDataManager;
     std::string m_Path;
     std::string m_Username;
     std::string m_Pwd;

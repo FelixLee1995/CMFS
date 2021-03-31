@@ -159,6 +159,27 @@ bool CMarketDataManager::UpdateMarketData(const CMarketDataExtField & marketData
     return true;
 }
 
+bool CMarketDataManager::UpdateMarketData(
+    const std::string &instrumentid, std::function<void(CMarketDataExtField &market)> updateFunc)
+{
+    auto iter = m_MarketDataMap.find(instrumentid);
+    if (iter == m_MarketDataMap.end())
+    {
+        SPDLOG_ERROR(
+            "Failed to find such instrument: {},  add this instrument to market map", instrumentid);
+
+        CMarketDataExtField newMarketData;
+        updateFunc(newMarketData);
+        m_MarketDataMap.try_emplace(instrumentid, newMarketData);
+
+        return false;
+    }
+
+    updateFunc(iter->second.Data);
+
+    return true;
+}
+
 void CMarketDataManager::LockedIterFunc(std::function<void(const MarketData &)> f)
 {
     for (auto market : m_MarketDataMap)

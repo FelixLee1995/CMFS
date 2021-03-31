@@ -6,6 +6,7 @@
 #include "apiWrapper/ctp/MyMarketApi.h"
 #include <iostream>
 #include "core/CFlow.h"
+#include "plugin/CMarketDataManager.h"
 
 class MyMarketApi;
 
@@ -38,6 +39,7 @@ class MyMarketSpi: public CThostFtdcMdSpi {
     private:
         MyMarketApi* m_api_;
 		CFlowManager::Sptr m_FlowManager;
+		CMarketDataManager::Sptr m_MarketDataManager;
 		
 };
 

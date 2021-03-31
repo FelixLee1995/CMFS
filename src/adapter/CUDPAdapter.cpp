@@ -33,6 +33,8 @@ void CUdpMarketAdapter::Stop()
 MyUdpApi::MyUdpApi(const nlohmann::json &config) 
 {
     m_FlowManager.reset(Singleton<CFlowManager>::GetInstance());
+    m_MarketDataManager.reset(Singleton<CMarketDataManager>::GetInstance());
+
 
     m_Path = config["path"].get<std::string>();
     m_Username = config["username"].get<std::string>();
@@ -53,7 +55,7 @@ void MyUdpApi::Init()
 
 void MyUdpApi::OnFrontConnected()
 {
-    std::cout << "OnFrontConnected ===========================" << std::endl;
+    SPDLOG_INFO("OnFrontConnected");
     GtjaMdReqUserLoginField req;
     memset(&req, 0, sizeof(req));
     strcpy(req.UserID, m_Username.c_str());
@@ -80,58 +82,108 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
     const GtjaMdV3::GtjaMdBaseInfoFieldV3 *pBaseInfo, const GtjaMdV3::GtjaMdStaticInfoFieldV3 *pStaticInfo, int MBLLength,
     const GtjaMdV3::GtjaMdMBLFieldV3 *pMBL)
 {
-    // std::cout << "OnRtnDepthMarketData: " << pInstrument->ExchangeType << pInstrument->InstrumentID << "\t"
-    //           << std::setfill('0') << std::setw(2) << (int)pStamp->Time.Hour << ":" << (int)pStamp->Time.Minite << ":"
-    //           << pStamp->Time.Seccond << "." << std::setw(3) << pStamp->Time.MilliSec;
+    //    if (pMBL && MBLLength > 0)
+    //    {
+    //        std::cout << "\t" << pMBL[0].BidPrice << "\t" << pMBL[0].BidVolume << "\t" << pMBL[0].AskPrice << "\t"
+    //                  << pMBL[0].AskVolume;
+    //    }
 
-//    if (pMBL && MBLLength > 0)
-//    {
-//        std::cout << "\t" << pMBL[0].BidPrice << "\t" << pMBL[0].BidVolume << "\t" << pMBL[0].AskPrice << "\t"
-//                  << pMBL[0].AskVolume;
-//    }
+    CMarketDataExtField marketDataOut;
 
-    CMarketDataExtField marketData;
-    strcpy(marketData.ExchangeID, ConvertExchange(pInstrument->ExchangeType).c_str());
-    strcpy(marketData.InstrumentID, pInstrument->InstrumentID);
+    m_MarketDataManager->UpdateMarketData(pInstrument->InstrumentID, [&](CMarketDataExtField &marketData) {
+        strcpy(marketData.InstrumentID, pInstrument->InstrumentID);
+        strcpy(marketData.ExchangeID, ConvertExchange(pInstrument->ExchangeType).c_str());
 
+        auto updateTime = fmt::format("{:02d}:{:02d}:{:02d}", pStamp->Time.Hour, pStamp->Time.Minite, pStamp->Time.Seccond);
 
-    int vol = pTradeInfo->Volume;
-    if (strcmp(marketData.InstrumentID, "cu2105") == 0)
-        SPDLOG_INFO("udp recv {}, vol {}", pInstrument->InstrumentID, vol);
+        strcpy(marketData.UpdateTime, updateTime.c_str());
+        marketData.UpdateMillisec = pStamp->Time.MilliSec;
 
-    if (pTradeInfo)
-    {
-        marketData.LastPrice = MY_HTONF(pTradeInfo->LastPrice);
-        marketData.Turnover = MY_HTONF(pTradeInfo->Turnover);
-        marketData.OpenInterest = MY_HTONF(pTradeInfo->OpenInterest);
-        marketData.Volume = htonl((int)pTradeInfo->Volume);
-    }
+        if (pTradeInfo)
+        {
+            marketData.LastPrice = MY_HTONF(pTradeInfo->LastPrice);
+            marketData.Turnover = MY_HTONF(pTradeInfo->Turnover);
+            marketData.OpenInterest = MY_HTONF(pTradeInfo->OpenInterest);
+            marketData.Volume = htonl((int)pTradeInfo->Volume);
+        }
 
+        if (pBaseInfo)
+        {
+            strcpy(marketData.TradingDay, pBaseInfo->TradingDay);
+            marketData.PreSettlementPrice = MY_HTONF(pBaseInfo->PreSettlementPrice);
+            marketData.PreClosePrice = MY_HTONF(pBaseInfo->PreClosePrice);
+            marketData.PreOpenInterest = MY_HTONF(pBaseInfo->PreOpenInterest);
+            marketData.UpperLimitPrice = MY_HTONF(pBaseInfo->UpperLimitPrice);
+            marketData.LowerLimitPrice = MY_HTONF(pBaseInfo->LowerLimitPrice);
+        }
 
-    if (pBaseInfo)
-    {
-        strcpy(marketData.TradingDay, pBaseInfo->TradingDay);
-        marketData.PreSettlementPrice = MY_HTONF(pBaseInfo->PreSettlementPrice);
-        marketData.PreClosePrice = MY_HTONF(pBaseInfo->PreClosePrice);
-        marketData.PreOpenInterest = MY_HTONF(pBaseInfo->PreOpenInterest);
-        marketData.UpperLimitPrice = MY_HTONF(pBaseInfo->UpperLimitPrice);
-        marketData.LowerLimitPrice = MY_HTONF(pBaseInfo->LowerLimitPrice);
-    }
+        if (pStaticInfo)
+        {
+            marketData.OpenPrice = MY_HTONF(pStaticInfo->OpenPrice);
+            marketData.ClosePrice = MY_HTONF(pStaticInfo->ClosePrice);
+            marketData.SettlementPrice = MY_HTONF(pStaticInfo->SettlementPrice);
+            marketData.HighestPrice = MY_HTONF(pStaticInfo->HighestPrice);
+            marketData.LowestPrice = MY_HTONF(pStaticInfo->LowestPrice);
+        }
 
-    if (pStaticInfo)
-    {
-        marketData.OpenPrice = MY_HTONF(pStaticInfo->OpenPrice);
-        marketData.ClosePrice = MY_HTONF(pStaticInfo->ClosePrice);
-        marketData.SettlementPrice = MY_HTONF(pStaticInfo->SettlementPrice);
-        marketData.HighestPrice = MY_HTONF(pStaticInfo->HighestPrice);
-        marketData.LowestPrice = MY_HTONF(pStaticInfo->LowestPrice);
-    }
+        int depth = 1;
+        auto st = const_cast<GtjaMdV3::GtjaMdMBLFieldV3 *>(pMBL);
+        while (depth <= MBLLength)
+        {
+            switch (depth)
+            {
+                case 1:
+                {
+                    marketData.AskPrice1 = st->AskPrice;
+                    marketData.AskVolume1 = st->AskVolume;
+                    marketData.BidPrice1 = st->BidPrice;
+                    marketData.BidVolume1 = st->BidVolume;
+                    break;
+                }
+                case 2:
+                {
+                    marketData.AskPrice2 = st->AskPrice;
+                    marketData.AskVolume2 = st->AskVolume;
+                    marketData.BidPrice2 = st->BidPrice;
+                    marketData.BidVolume2 = st->BidVolume;
+                    break;
+                }
+                case 3:
+                {
+                    marketData.AskPrice3 = st->AskPrice;
+                    marketData.AskVolume3 = st->AskVolume;
+                    marketData.BidPrice3 = st->BidPrice;
+                    marketData.BidVolume3 = st->BidVolume;
+                    break;
+                }
+                case 4:
+                {
+                    marketData.AskPrice4 = st->AskPrice;
+                    marketData.AskVolume4 = st->AskVolume;
+                    marketData.BidPrice4 = st->BidPrice;
+                    marketData.BidVolume4 = st->BidVolume;
+                    break;
+                }
+                case 5:
+                {
+                    marketData.AskPrice5 = st->AskPrice;
+                    marketData.AskVolume5 = st->AskVolume;
+                    marketData.BidPrice5 = st->BidPrice;
+                    marketData.BidVolume5 = st->BidVolume;
+                    break;
+                }
+                default:
+                    break;
+            }
+            st++;
+            depth++;
+        }
 
+        marketDataOut = marketData;
+    });
 
-    ///TODO  lv2行情转换
-
-    PUB_BIZ_MSG_TO_PLUGIN(m_FlowManager, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketData, sizeof(CMarketDataExtField), 1);
-
+    PUB_BIZ_MSG_TO_PLUGIN(m_FlowManager, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketDataOut,
+        sizeof(CMarketDataExtField), 1);
 }
 
 void MyUdpApi::OnRspLastSnapshot(const GtjaDepthMarketDataField *pDepthMarketData)

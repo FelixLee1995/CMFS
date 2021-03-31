@@ -274,7 +274,6 @@ void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)
 
 
     auto marketData = (CMarketDataExtField*) msg.Pack;
-    m_MarketDataManager->UpdateMarketData(*marketData);
 
     std::bitset<MAX_ONLINE_USERS> subscribers;
     std::set<SessionIdType> sessionIdSet;

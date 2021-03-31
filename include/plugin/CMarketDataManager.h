@@ -52,6 +52,9 @@ class CMarketDataManager
         // 用新分发的行情更新内存数据， 若更新， 则返回true， 若为新增合约， 则返回false
         bool UpdateMarketData(const CMarketDataExtField &);
 
+        bool UpdateMarketData(const std::string& instrumentid, std::function<void(CMarketDataExtField& market)> updateFunc);
+
+
         void GetMarketDataSubsribers(const std::string &instrumentID, std::bitset<MAX_ONLINE_USERS> &);
 
         void LockedIterFunc(std::function<void(const MarketData&)>);

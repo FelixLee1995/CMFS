@@ -13,7 +13,7 @@ MyMarketSpi::MyMarketSpi(MyMarketApi *api) : m_api_(api)
 {
 
     m_FlowManager.reset(Singleton<CFlowManager>::GetInstance());
-
+    m_MarketDataManager.reset(Singleton<CMarketDataManager>::GetInstance());
 }
 
 MyMarketSpi::~MyMarketSpi() {}
@@ -94,32 +94,62 @@ void MyMarketSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
     SPDLOG_INFO("market record, instrid: {}, price: {}, vol: {}, updateTime: {}", pDepthMarketData->InstrumentID,
         pDepthMarketData->LastPrice, pDepthMarketData->Volume, pDepthMarketData->UpdateTime);
 
-    CMarketDataExtField marketData;
-    strcpy(marketData.ExchangeID, pDepthMarketData->ExchangeID);
-    strcpy(marketData.InstrumentID, pDepthMarketData->InstrumentID);
+    CMarketDataExtField marketDataOut;
 
-    marketData.LastPrice = MY_HTONF(pDepthMarketData->LastPrice);
-    marketData.Turnover = MY_HTONF(pDepthMarketData->Turnover);
-    marketData.OpenInterest = MY_HTONF(pDepthMarketData->OpenInterest);
-    marketData.Volume = htonl(pDepthMarketData->Volume);
+    m_MarketDataManager->UpdateMarketData(pDepthMarketData->InstrumentID, [&](CMarketDataExtField &marketData) {
+        strcpy(marketData.ExchangeID, pDepthMarketData->ExchangeID);
+        strcpy(marketData.InstrumentID, pDepthMarketData->InstrumentID);
 
-    strcpy(marketData.TradingDay, pDepthMarketData->TradingDay);
-    marketData.PreSettlementPrice = MY_HTONF(pDepthMarketData->PreSettlementPrice);
-    marketData.PreClosePrice = MY_HTONF(pDepthMarketData->PreClosePrice);
-    marketData.PreOpenInterest = MY_HTONF(pDepthMarketData->PreOpenInterest);
-    marketData.UpperLimitPrice = MY_HTONF(pDepthMarketData->UpperLimitPrice);
-    marketData.LowerLimitPrice = MY_HTONF(pDepthMarketData->LowerLimitPrice);
+        marketData.LastPrice = MY_HTONF(pDepthMarketData->LastPrice);
+        marketData.Turnover = MY_HTONF(pDepthMarketData->Turnover);
+        marketData.OpenInterest = MY_HTONF(pDepthMarketData->OpenInterest);
+        marketData.Volume = htonl(pDepthMarketData->Volume);
 
-    marketData.OpenPrice = MY_HTONF(pDepthMarketData->OpenPrice);
-    marketData.ClosePrice = MY_HTONF(pDepthMarketData->ClosePrice);
-    marketData.SettlementPrice = MY_HTONF(pDepthMarketData->SettlementPrice);
-    marketData.HighestPrice = MY_HTONF(pDepthMarketData->HighestPrice);
-    marketData.LowestPrice = MY_HTONF(pDepthMarketData->LowestPrice);
+        strcpy(marketData.TradingDay, pDepthMarketData->TradingDay);
+        marketData.PreSettlementPrice = MY_HTONF(pDepthMarketData->PreSettlementPrice);
+        marketData.PreClosePrice = MY_HTONF(pDepthMarketData->PreClosePrice);
+        marketData.PreOpenInterest = MY_HTONF(pDepthMarketData->PreOpenInterest);
+        marketData.UpperLimitPrice = MY_HTONF(pDepthMarketData->UpperLimitPrice);
+        marketData.LowerLimitPrice = MY_HTONF(pDepthMarketData->LowerLimitPrice);
 
-    strcpy(marketData.UpdateTime, pDepthMarketData->UpdateTime);
-    strcpy(marketData.ActionDay, pDepthMarketData->ActionDay);
+        marketData.OpenPrice = MY_HTONF(pDepthMarketData->OpenPrice);
+        marketData.ClosePrice = MY_HTONF(pDepthMarketData->ClosePrice);
+        marketData.SettlementPrice = MY_HTONF(pDepthMarketData->SettlementPrice);
+        marketData.HighestPrice = MY_HTONF(pDepthMarketData->HighestPrice);
+        marketData.LowestPrice = MY_HTONF(pDepthMarketData->LowestPrice);
 
-    PUB_BIZ_MSG_TO_PLUGIN(m_FlowManager, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketData, sizeof(CMarketDataExtField), 1);
+        marketData.BidPrice1 =  MY_HTONF(pDepthMarketData->BidPrice1);
+        marketData.BidVolume1 =  MY_HTONF(pDepthMarketData->BidVolume1);
+        marketData.AskPrice1 =  MY_HTONF(pDepthMarketData->AskPrice1);
+        marketData.AskVolume1 =  MY_HTONF(pDepthMarketData->AskVolume1);
+
+        marketData.BidPrice2 =  MY_HTONF(pDepthMarketData->BidPrice2);
+        marketData.BidVolume2 =  MY_HTONF(pDepthMarketData->BidVolume2);
+        marketData.AskPrice2 =  MY_HTONF(pDepthMarketData->AskPrice2);
+        marketData.AskVolume2 =  MY_HTONF(pDepthMarketData->AskVolume2);
+
+        marketData.BidPrice3 =  MY_HTONF(pDepthMarketData->BidPrice3);
+        marketData.BidVolume3 =  MY_HTONF(pDepthMarketData->BidVolume3);
+        marketData.AskPrice3 =  MY_HTONF(pDepthMarketData->AskPrice3);
+        marketData.AskVolume3 =  MY_HTONF(pDepthMarketData->AskVolume3);
+
+        marketData.BidPrice4 =  MY_HTONF(pDepthMarketData->BidPrice4);
+        marketData.BidVolume4 =  MY_HTONF(pDepthMarketData->BidVolume4);
+        marketData.AskPrice4 =  MY_HTONF(pDepthMarketData->AskPrice4);
+        marketData.AskVolume4 =  MY_HTONF(pDepthMarketData->AskVolume4);
+
+        marketData.BidPrice5 =  MY_HTONF(pDepthMarketData->BidPrice5);
+        marketData.BidVolume5 =  MY_HTONF(pDepthMarketData->BidVolume5);
+        marketData.AskPrice5 =  MY_HTONF(pDepthMarketData->AskPrice5);
+        marketData.AskVolume5 =  MY_HTONF(pDepthMarketData->AskVolume5);
 
 
+        strcpy(marketData.UpdateTime, pDepthMarketData->UpdateTime);
+        strcpy(marketData.ActionDay, pDepthMarketData->ActionDay);
+
+        marketDataOut = marketData;
+    });
+
+    PUB_BIZ_MSG_TO_PLUGIN(m_FlowManager, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketDataOut,
+        sizeof(CMarketDataExtField), 1);
 }
