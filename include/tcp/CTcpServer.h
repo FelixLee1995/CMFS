@@ -144,18 +144,18 @@ do {  \
 #define TCP_SEND_MULTI_RTNINFO(TOPICID, TCP_SERVER_PTR, SESSIONID, FTDC_TID, SPEC_RSP_INFO_FIELD_TYPE, SPEC_RSP_INFO_FIELD_PTR, CNT,  SPEC_RSP_FID)     \
 do {  \
     char oriData[4096] = {0};  \
-    unsigned int oriLen = sizeof(ftdc_field_header) + sizeof(SPEC_RSP_INFO_FIELD_TYPE) + sizeof(ftdc_header);  \
+    unsigned int oriLen = CNT * (sizeof(ftdc_field_header) + sizeof(SPEC_RSP_INFO_FIELD_TYPE)) + sizeof(ftdc_header);  \
     char encodedData[4096] = {0};  \
     unsigned int encodedLen = 0;  \
     char* data =  oriData; \
     auto  ftdc_header_s = (ftdc_header *)data;    \
     ftdc_header_s->ftdc_version = ftdc_version_cur;  \
-    ftdc_header_s->ftdc_chain = ftd_chain_last; \
+    ftdc_header_s->ftdc_chain = ftd_chain_single; \
     ftdc_header_s->ftdc_topic_id = htonl(FTDC_TID);  \
     ftdc_header_s->ftdc_seq_series = htons(ftdc_sid_none);  \
     ftdc_header_s->ftdc_seq_no = htonl(0);   \
     ftdc_header_s->ftdc_field_count = htons(cnt);   \
-    ftdc_header_s->ftdc_content_len = htons(sizeof(ftdc_field_header) + cnt *sizeof(SPEC_RSP_INFO_FIELD_TYPE)); \
+    ftdc_header_s->ftdc_content_len = htons(cnt * (sizeof(ftdc_field_header) + sizeof(SPEC_RSP_INFO_FIELD_TYPE))); \
     ftdc_header_s->ftdc_req_id = htonl(0);  \
     data += sizeof(ftdc_header);   \
     for (auto i = 0 ;i <cnt;++i) \

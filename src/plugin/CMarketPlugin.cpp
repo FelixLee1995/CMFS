@@ -125,25 +125,53 @@ void CMarketPlugin::HandleSub(const Msg &msg)
                 ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
     }
 
-    // 4. 发送行情快照
-    std::vector<CMarketDataExtField> dataVec;
-    dataVec.reserve(10);
-    for(auto iter = marketDataSnapshotSet.begin();iter!=marketDataSnapshotSet.end(); iter++)
+ for (auto marketData : marketDataSnapshotSet)
     {
-        if (iter->OpenPrice != 0)
-        {
-            dataVec.push_back(*iter);
-        }
-        
-        if (dataVec.size() >= 10 || iter == marketDataSnapshotSet.end())
-        {
-            TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-            CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
-            dataVec.clear();
-        }
-
+        // if (marketData.OpenPrice == 0)
+        // {
+        //     continue;
+        // }
+        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            CMarketDataExtField, &marketData, ftdc_fid_DepthMarketDataField);
     }
-    
+
+    // // 4. 发送行情快照
+    // std::vector<CMarketDataExtField> dataVec;
+    // dataVec.reserve(10);
+    // for(auto iter = marketDataSnapshotSet.begin();iter!=marketDataSnapshotSet.end(); iter++)
+    // {
+    //     // if (iter->OpenPrice != 0)
+    //     // {
+    //     //     dataVec.push_back(*iter);
+    //     // }
+        
+    //     dataVec.push_back(*iter);
+
+    //     if (dataVec.size() >= 4 || iter == marketDataSnapshotSet.end())
+    //     {
+    //         TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+    //         CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+
+    //         SPDLOG_INFO("multi send snapshot, size {}", dataVec.size());
+
+    //         dataVec.clear();
+
+    //         return;
+    //     }
+
+    // }
+
+    // if (dataVec.size() > 0 )
+    //     {
+    //         TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+    //         CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+
+    //         SPDLOG_INFO("multi send snapshot, size {}", dataVec.size());
+    //     }
+
+
+
+
 }
 
 

@@ -20,7 +20,7 @@
             "path": "tcp://10.3.6.221:42117",
             "username": "00000001",
             "pwd": "88888888",
-            "enable": true
+            "enable": false
         },
         {
             "type": "CTP",
@@ -28,7 +28,7 @@
             "brokerid": "9999",
             "username": "123616",
             "pwd": "nanase4ever",
-            "enable": false
+            "enable": true
         }
     ]
 }

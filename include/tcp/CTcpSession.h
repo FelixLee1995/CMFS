@@ -50,7 +50,7 @@ class MessageWrapper
 {
 public:
   enum { header_length = 4 };
-  enum { max_body_length = 512 };
+  enum { max_body_length = 2048 };
   uint8_t ext_len_;
   uint16_t body_length_;
   unsigned char data_[header_length + max_body_length];

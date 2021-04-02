@@ -5,3 +5,4 @@
 *.log
 *.core
 /runtime/logs
+.tags

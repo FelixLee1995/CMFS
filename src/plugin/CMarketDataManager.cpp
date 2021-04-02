@@ -37,7 +37,27 @@ size_t CMarketDataManager::LoadInstrumentFromCSV(const std::string& filePath)
         SPDLOG_INFO("load instrument: id {}, marketType {}, expireDate {}, exchangeID {}", 
             instrumentID, MarketType, expireDate, exchangeID);
             
-        m_MarketDataMap.try_emplace(instrumentID, instrumentID, exchangeID);
+
+        CMarketDataExtField data;
+        strcpy(data.ExchangeID, exchangeID.c_str());
+        strcpy(data.InstrumentID, instrumentID.c_str());
+        data.UpdateMillisec = 100;
+        strcpy(data.UpdateTime, "10:12:12");
+        data.AskPrice1 = 100;
+        data.AskVolume1 = 12;
+        data.LastPrice = 123;
+        data.Volume = 10;
+        data.OpenPrice = 121;
+        data.PreClosePrice = 123;
+        data.UpperLimitPrice = 150;
+        data.LowerLimitPrice = 100;
+        data.HighestPrice = 130;
+        data.LowestPrice = 115;
+        data.ClosePrice = 134;
+        data.SettlementPrice = 113;
+        data.Turnover = 140;
+
+        m_MarketDataMap.try_emplace(instrumentID, data);
         instr_count++;
     }
 
