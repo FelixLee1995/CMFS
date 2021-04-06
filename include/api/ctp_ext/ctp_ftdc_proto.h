@@ -2,6 +2,7 @@
 #define __CTP_FTDC_PROTO_H__
 #include <stdint.h>
 #include "api/ctp/ThostFtdcUserApiDataType.h"
+#include "api/ctp/ThostFtdcUserApiStruct.h"
 #if (defined WIN32)||(defined _WINDOWS_)
 #pragma pack(push,1)
 #elif defined __GNUC__
@@ -425,7 +426,6 @@ namespace ctp_ftd{
 	};
 
 
-
 	struct CMarketDataExtField
 	{
 		///交易日
@@ -516,7 +516,7 @@ namespace ctp_ftd{
 	TThostFtdcPriceType	AveragePrice;
 	///业务日期
 	TThostFtdcDateType	ActionDay;
-	//char extField[162];
+	char extField[162];
 	};
 
 

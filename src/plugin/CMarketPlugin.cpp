@@ -23,7 +23,9 @@ void CMarketPlugin::Init()
     Subscribe(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN);
     Subscribe(TOPIC_USER_MANAGE, FUNC_REQ_USER_TIMEOUT);
 
-    
+    std::cout << "sizeof CMarketDataExtField is " <<  sizeof(CMarketDataExtField) << std::endl; 
+    std::cout << "sizeof CThostFtdcDepthMarketDataField is " <<  sizeof(CThostFtdcDepthMarketDataField) << std::endl; 
+
     
 }
 void CMarketPlugin::MsgHandler(const Msg &msg)
@@ -53,6 +55,9 @@ void CMarketPlugin::HandleSub(const Msg &msg)
     /// 1. parse req field, 得到订阅参数
     auto sessionId = msg.Header.SessionId;
     auto cnt = msg.Header.Count;
+
+
+    SPDLOG_INFO("sessionid is {}", sessionId);
 
 
     std::set<CMarketDataExtField, MarketDataCmp> marketDataSnapshotSet;
@@ -125,49 +130,46 @@ void CMarketPlugin::HandleSub(const Msg &msg)
                 ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
     }
 
- for (auto marketData : marketDataSnapshotSet)
+//  for (auto marketData : marketDataSnapshotSet)
+//     {
+//         // if (marketData.OpenPrice == 0)
+//         // {
+//         //     continue;
+//         // }
+//         TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+//             CMarketDataExtField, &marketData, ftdc_fid_DepthMarketDataField);
+//     }
+
+    // 4. 发送行情快照
+    std::vector<CMarketDataExtField> dataVec;
+    dataVec.reserve(10);
+    for(auto iter = marketDataSnapshotSet.begin();iter!=marketDataSnapshotSet.end(); iter++)
     {
-        // if (marketData.OpenPrice == 0)
-        // {
-        //     continue;
-        // }
-        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-            CMarketDataExtField, &marketData, ftdc_fid_DepthMarketDataField);
+        if (iter->OpenPrice != 0)
+        {
+            dataVec.push_back(*iter);
+            SPDLOG_INFO("data to be sent: instr {}, price {},  vol {}", iter->InstrumentID, iter->LastPrice, iter->Volume);
+        }
+        
+        //dataVec.push_back(*iter);
+
+        if (dataVec.size() >= 10)
+        {
+            TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+            dataVec.clear();
+
+            CommonSleep(1);
+        }
+
     }
 
-    // // 4. 发送行情快照
-    // std::vector<CMarketDataExtField> dataVec;
-    // dataVec.reserve(10);
-    // for(auto iter = marketDataSnapshotSet.begin();iter!=marketDataSnapshotSet.end(); iter++)
-    // {
-    //     // if (iter->OpenPrice != 0)
-    //     // {
-    //     //     dataVec.push_back(*iter);
-    //     // }
-        
-    //     dataVec.push_back(*iter);
-
-    //     if (dataVec.size() >= 4 || iter == marketDataSnapshotSet.end())
-    //     {
-    //         TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-    //         CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
-
-    //         SPDLOG_INFO("multi send snapshot, size {}", dataVec.size());
-
-    //         dataVec.clear();
-
-    //         return;
-    //     }
-
-    // }
-
-    // if (dataVec.size() > 0 )
-    //     {
-    //         TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-    //         CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
-
-    //         SPDLOG_INFO("multi send snapshot, size {}", dataVec.size());
-    //     }
+    if (dataVec.size() > 0 )
+        {
+            //auto cnt = dataVec.size();
+            TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+        }
 
 
 

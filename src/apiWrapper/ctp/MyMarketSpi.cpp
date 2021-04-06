@@ -59,13 +59,13 @@ void MyMarketSpi::OnRspUserLogout(
 void MyMarketSpi::OnRspSubMarketData(
     CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    std::cout << "OnRspSubMarketData!" << std::endl;
+    //std::cout << "OnRspSubMarketData!" << std::endl;
 
     if (pRspInfo && pRspInfo->ErrorID == 0)
     {
         if (pSpecificInstrument)
         {
-            std::cout << "subscribe success: " << pSpecificInstrument->InstrumentID << std::endl;
+            //std::cout << "subscribe success: " << pSpecificInstrument->InstrumentID << std::endl;
         }
     }
 
@@ -78,21 +78,21 @@ void MyMarketSpi::OnRspSubMarketData(
 void MyMarketSpi::OnRspUnSubMarketData(
     CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    std::cout << "OnRspUnSubMarketData!" << std::endl;
+    //std::cout << "OnRspUnSubMarketData!" << std::endl;
 
     if (pRspInfo && pRspInfo->ErrorID == 0)
     {
         if (pSpecificInstrument)
         {
-            std::cout << "unsubscribe success: " << pSpecificInstrument->InstrumentID << std::endl;
+            //std::cout << "unsubscribe success: " << pSpecificInstrument->InstrumentID << std::endl;
         }
     }
 }
 
 void MyMarketSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData)
 {
-    SPDLOG_INFO("market record, instrid: {}, price: {}, vol: {}, updateTime: {}", pDepthMarketData->InstrumentID,
-        pDepthMarketData->LastPrice, pDepthMarketData->Volume, pDepthMarketData->UpdateTime);
+    // SPDLOG_INFO("market record, instrid: {}, price: {}, vol: {}, updateTime: {}", pDepthMarketData->InstrumentID,
+    //     pDepthMarketData->LastPrice, pDepthMarketData->Volume, pDepthMarketData->UpdateTime);
 
     CMarketDataExtField marketDataOut;
 
