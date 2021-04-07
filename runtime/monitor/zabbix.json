@@ -1,0 +1,10 @@
+{
+  "host": "host1",
+  "key": "market_L1_sgx",
+  "monitor_out": "monitor/stdout.log",
+  "monitor_out_flag": 1,
+  "zabbix_port": 10051,
+  "zabbix_server": "180.76.115.130",
+  "zabbix_submit_rule": "MONITOR",
+  "health_check_port": 18004
+}

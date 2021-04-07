@@ -1,36 +1,69 @@
 #include "adapter/CUDPAdapter.h"
 #include "utils/Utils.h"
-
-
+#include "monitor/IMonitorApp.h"
 
 CUdpMarketAdapter::CUdpMarketAdapter(const nlohmann::json &config)
-: IMarketRecvAdapter("UdpMarketAdapter")
+    : IMarketRecvAdapter("UdpMarketAdapter"), api(nullptr), m_WorkFlag(false), m_GuardThread(nullptr)
 {
-      api = new MyUdpApi(config);
-}
+    api = new MyUdpApi(config);
 
+    mi::g_monitor_->RegisterHealthDetailItem("UdpMarket");
+}
 
 CUdpMarketAdapter::~CUdpMarketAdapter()
 {
-
+    api->Release();
+    delete api;
 }
 
 
 void CUdpMarketAdapter::Init()
 {   
     SPDLOG_INFO("start UdpMarketAdapter");
-    api->Init();
+    m_WorkFlag.store(true);
+    m_GuardThread = std::make_shared<std::thread>(&CUdpMarketAdapter::GuardFunc, this);
+}
+
+void CUdpMarketAdapter::GuardFunc()
+{   
+
+    while (m_WorkFlag)
+    {
+        if (!api)
+        {
+            SPDLOG_ERROR("api is null");
+            break;
+        }
+
+        if (api->m_ConnectStatus.load() == false)
+        {
+     
+            //TODO  判断 api 重连时是否复用
+            SPDLOG_INFO("try connecting");
+            api->Init();
+        }
+
+        CommonSleep(1000*30);
+    }
+
 }
 
 
 void CUdpMarketAdapter::Stop()
 {   
+    m_WorkFlag.store(false);
+    
+    if (m_GuardThread->joinable())
+    {
+        m_GuardThread->join();
+    }
 
+    m_GuardThread.reset();
 }
 
 
 
-MyUdpApi::MyUdpApi(const nlohmann::json &config) 
+MyUdpApi::MyUdpApi(const nlohmann::json &config): m_IsConnecting(false), m_ConnectStatus(false)
 {
     m_FlowManager.reset(Singleton<CFlowManager>::GetInstance());
     m_MarketDataManager.reset(Singleton<CMarketDataManager>::GetInstance());
@@ -43,7 +76,6 @@ MyUdpApi::MyUdpApi(const nlohmann::json &config)
 
 void MyUdpApi::Init()
 {
-
     pApi = GtjaMdUserApi::CreateMdUserApi("api.log");
 	pApi->RegisterSpi(this);
 	pApi->RegisterFront(m_Path.c_str());
@@ -52,6 +84,13 @@ void MyUdpApi::Init()
 	//pApi->Join();
 
 }
+
+    void MyUdpApi::Release()
+    {
+        pApi->RegisterSpi(nullptr);
+        pApi->Join();
+        pApi->Release();
+    }
 
 void MyUdpApi::OnFrontConnected()
 {
@@ -63,17 +102,29 @@ void MyUdpApi::OnFrontConnected()
     pApi->ReqUserLogin(&req, 0);
 }
 
+void MyUdpApi::OnFrontDisconnected(int nReason)
+{
+    m_ConnectStatus.store(false);
+    mi::g_monitor_->PostFailDetail("UdpMarket", "OnFrontDisconnected");
+}
+
 ///登录请求响应
 void MyUdpApi::OnRspUserLogin(
     const GtjaMdRspUserLoginField *pRspUserLogin, const GtjaMdRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
     if (pRspInfo && pRspInfo->ErrorID)
     {
-        printf("RspUserLogin,Error:%d,%s\n", pRspInfo->ErrorID, pRspInfo->ErrorMsg);
+        m_ConnectStatus.store(false);
+        auto msg = fmt::format("RspUserLogin,Error:{},{}", pRspInfo->ErrorID, pRspInfo->ErrorMsg);
+        SPDLOG_ERROR(msg);
+        mi::g_monitor_->PostFailDetail("UdpMarket", msg.c_str());
     }
     else if (pRspUserLogin)
     {
-        printf("RspUserLogin Succ:LoginTime:%s\n", pRspUserLogin->LoginTime);
+        m_ConnectStatus.store(true);
+        auto msg = fmt::format("RspUserLogin Succ:LoginTime:{}", pRspUserLogin->LoginTime);
+        SPDLOG_INFO(msg);
+        mi::g_monitor_->PostSuccessDetail("UdpMarket", msg.c_str());
     }
 }
 

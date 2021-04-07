@@ -28,41 +28,18 @@ private:
     std::string m_Path;
     std::string m_Username;
     std::string m_Pwd;
-    // const char* DspExch(uint8_t t) {
-    // 	switch (t) {
-    // 	case _et_czce:
-    // 		return "CZCE.";
-    // 		break;
-    // 	case _et_dce:
-    // 		return "DCE.";
-    // 		break;
-    // 	case _et_shfe:
-    // 		return "SHFE.";
-    // 		break;
-    // 	case _et_cffex:
-    // 		return "CFFEX.";
-    // 		break;
-    // 	case _et_ine:
-    // 		return "INE.";
-    // 		break;
-    // 	case _et_sse:
-    // 		return "SSE.";
-    // 		break;
-    // 	case _et_szse:
-    // 		return "SZSE.";
-    // 		break;
-    // 	case _et_sge:
-    // 		return "SGE.";
-    // 		break;
-    // 	default:
-    // 		return "";
-    // 	}
-    // }
+
 public:
+
+    std::atomic<bool> m_IsConnecting;
+
+    std::atomic<bool> m_ConnectStatus;
 
 	explicit MyUdpApi(const nlohmann::json &config);
 	
     void Init();
+
+    void Release();
 
     ///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
     void GTJAMDAPI OnFrontConnected() override;
@@ -74,7 +51,7 @@ public:
     ///        0x2001 接收心跳超时
     ///        0x2002 发送心跳失败
     ///        0x2003 收到错误报文
-    virtual void GTJAMDAPI OnFrontDisconnected(int nReason){}
+    void GTJAMDAPI OnFrontDisconnected(int nReason) override;
     ///错误应答
     virtual void GTJAMDAPI OnRspError(const GtjaMdRspInfoField* pRspInfo, int nRequestID, bool bIsLast){
 
@@ -97,23 +74,19 @@ public:
     std::string ConvertExchange(uint8_t exchange);
 };
 
-
-
-class CUdpMarketAdapter: public IMarketRecvAdapter 
+class CUdpMarketAdapter : public IMarketRecvAdapter
 {
-    private:
-    MyUdpApi * api;
+private:
+    MyUdpApi *api;
+    std::atomic<bool> m_WorkFlag;
+    std::shared_ptr<std::thread> m_GuardThread;
 
-    public:
+public:
     explicit CUdpMarketAdapter(const nlohmann::json &config);
     void Init() override;
     void Stop() override;
+    void GuardFunc();
     ~CUdpMarketAdapter();
 };
-
-
-
-
-
 
 #endif

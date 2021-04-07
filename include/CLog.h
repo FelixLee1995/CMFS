@@ -23,7 +23,7 @@ namespace
 {
 void SetLogger()
 {
-    auto logger = spdlog::daily_logger_mt("daily_logger", "logs/system.log");
+    auto logger = spdlog::daily_logger_mt("mylog_daily", "logs/system.log");
     logger->set_level(spdlog::level::debug);
 
     //logger->flush_on(spdlog::level::info);
@@ -37,7 +37,7 @@ void SetLogger()
 
     spdlog::sinks_init_list sink_list = {logger->sinks().front(), console_log_ptr->sinks().front()};
 
-    auto mylogger_ = std::make_shared<spdlog::logger>("my_logger", sink_list);
+    auto mylogger_ = std::make_shared<spdlog::logger>("mylogs", sink_list);
 
     mylogger_->set_level(spdlog::level::debug);
 

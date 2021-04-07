@@ -69,7 +69,7 @@ target_link_libraries(cmfs gtest GtjaMdUserApi thostmduserapi_se thosttraderapi_
 IF(UNIX)
   target_link_libraries(test_cache pthread)
   target_link_libraries(test_md pthread )
-  target_link_libraries(cmfs pthread)
+  target_link_libraries(cmfs pthread monitor_dll_x64)
 ENDIF()
 
 
