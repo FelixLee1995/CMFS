@@ -105,26 +105,28 @@ void MyUdpApi::OnFrontConnected()
 void MyUdpApi::OnFrontDisconnected(int nReason)
 {
     m_ConnectStatus.store(false);
-    mi::g_monitor_->PostFailDetail("UdpMarket", "OnFrontDisconnected");
+    mi::g_monitor_->MonitorOut("UdpMarket", "OnFrontDisconnected", mi::Error);
 }
 
 ///登录请求响应
 void MyUdpApi::OnRspUserLogin(
     const GtjaMdRspUserLoginField *pRspUserLogin, const GtjaMdRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    if (pRspInfo && pRspInfo->ErrorID)
+    if (pRspInfo && pRspInfo->ErrorID == 0)
+    {
+        m_ConnectStatus.store(true);
+        auto msg = fmt::format("RspUserLogin Succ");
+        SPDLOG_INFO(msg);
+        mi::g_monitor_->MonitorOut("UdpMarket", "Login Success", mi::Normal);
+
+        
+    }
+    else if (pRspInfo && pRspInfo->ErrorID != 0)
     {
         m_ConnectStatus.store(false);
         auto msg = fmt::format("RspUserLogin,Error:{},{}", pRspInfo->ErrorID, pRspInfo->ErrorMsg);
         SPDLOG_ERROR(msg);
-        mi::g_monitor_->PostFailDetail("UdpMarket", msg.c_str());
-    }
-    else if (pRspUserLogin)
-    {
-        m_ConnectStatus.store(true);
-        auto msg = fmt::format("RspUserLogin Succ:LoginTime:{}", pRspUserLogin->LoginTime);
-        SPDLOG_INFO(msg);
-        mi::g_monitor_->PostSuccessDetail("UdpMarket", msg.c_str());
+        mi::g_monitor_->MonitorOut("UdpMarket", msg.c_str(), mi::Error);
     }
 }
 
@@ -138,6 +140,8 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
     //        std::cout << "\t" << pMBL[0].BidPrice << "\t" << pMBL[0].BidVolume << "\t" << pMBL[0].AskPrice << "\t"
     //                  << pMBL[0].AskVolume;
     //    }
+
+
 
     CMarketDataExtField marketDataOut;
 

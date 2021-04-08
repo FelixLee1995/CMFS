@@ -1,8 +1,14 @@
 #include "apiWrapper/ctp/MyCtpSpi.h"
+#include "CLog.h"
 #include <vector>
 #include <chrono>
 
-MyCtpSpi::MyCtpSpi(MyCtpApi *api): m_api_(api) {
+MyCtpSpi::MyCtpSpi(MyCtpApi *api): m_api_(api), ofs("./config/instruments.csv", std::ios::trunc) {
+
+    if (!ofs)
+    {
+        std::cout << "Failed to open ./config/instruments.csv!" << std::endl;
+    }
 
 }
 
@@ -315,23 +321,18 @@ void MyCtpSpi::OnRspQryInstrument(CThostFtdcInstrumentField *pInstrument, CThost
 
     if (pInstrument)
     {
-        char ProductClass;
-        if (pInstrument->ProductClass == THOST_FTDC_PC_Futures)
+   
+        if (pInstrument->InstrumentID)
         {
-            ProductClass = 'F';
+            ofs << pInstrument->InstrumentID << std::endl;
         }
-        else   if (pInstrument->ProductClass == THOST_FTDC_PC_Options)
-        {
-            ProductClass = 'O';
-        }
-        else   if (pInstrument->ProductClass == THOST_FTDC_PC_Combination)
-        {
-            ProductClass = 'C';
-        }
-        
 
+    }
 
-        std::cout << pInstrument->InstrumentID << " " <<  ProductClass << " " << pInstrument->ExpireDate << " " << pInstrument->ExchangeID << std::endl;
+    if (bIsLast)
+    {
+        std::cout << "qry instrument finished!" << std::endl;
+        _exit(0);
     }
 
 

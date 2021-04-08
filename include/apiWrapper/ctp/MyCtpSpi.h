@@ -5,6 +5,7 @@
 #include "api/ctp/ThostFtdcTraderApi.h"
 #include "apiWrapper/ctp/MyCtpApi.h"
 #include <iostream>
+#include <fstream>
 
 class MyCtpApi;
 
@@ -83,6 +84,7 @@ class MyCtpSpi: public CThostFtdcTraderSpi {
 
     private:
         MyCtpApi* m_api_;
+		std::ofstream ofs;
 };
 
 

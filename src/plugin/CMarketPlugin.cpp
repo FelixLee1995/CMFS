@@ -130,47 +130,47 @@ void CMarketPlugin::HandleSub(const Msg &msg)
                 ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
     }
 
- for (auto marketData : marketDataSnapshotSet)
-    {
-        if (marketData.OpenPrice == 0)
-        {
-            continue;
-        }
-        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-            CMarketDataExtField, &marketData, ftdc_fid_DepthMarketDataField);
-        CommonSleep(1);
-    }
+//  for (auto marketData : marketDataSnapshotSet)
+//     {
+//         if (marketData.OpenPrice == 0)
+//         {
+//             continue;
+//         }
+//         TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+//             CMarketDataExtField, &marketData, ftdc_fid_DepthMarketDataField);
+//         CommonSleep(1);
+//     }
 
     // 4. 发送行情快照
-    // std::vector<CMarketDataExtField> dataVec;
-    // dataVec.reserve(10);
-    // for(auto iter = marketDataSnapshotSet.begin();iter!=marketDataSnapshotSet.end(); iter++)
-    // {
-    //     if (iter->OpenPrice != 0)
-    //     {
-    //         dataVec.emplace_back(*iter);
-    //         //SPDLOG_INFO("data to be sent: instr {}, price {},  vol {}", iter->InstrumentID, iter->LastPrice, iter->Volume);
-    //     }
+    std::vector<CMarketDataExtField> dataVec;
+    dataVec.reserve(10);
+    for(auto iter = marketDataSnapshotSet.begin();iter!=marketDataSnapshotSet.end(); iter++)
+    {
+        if (iter->OpenPrice != __DBL_MAX__)
+        {
+            dataVec.emplace_back(*iter);
+            //SPDLOG_INFO("data to be sent: instr {}, price {},  vol {}", iter->InstrumentID, iter->LastPrice, iter->Volume);
+        }
         
-    //     //dataVec.push_back(*iter);
+        //dataVec.push_back(*iter);
 
-    //     if (dataVec.size() >= 10)
-    //     {
-    //         TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-    //         CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
-    //         dataVec.clear();
+        if (dataVec.size() >= 10)
+        {
+            TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+            dataVec.clear();
 
-    //         CommonSleep(1);
-    //     }
+            CommonSleep(1);
+        }
 
-    // }
+    }
 
-    // if (dataVec.size() > 0)
-    // {
-    //     //auto cnt = dataVec.size();
-    //     TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-    //         CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
-    // }
+    if (dataVec.size() > 0)
+    {
+        //auto cnt = dataVec.size();
+        TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+    }
 }
 
 

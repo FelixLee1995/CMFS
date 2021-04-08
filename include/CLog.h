@@ -8,7 +8,6 @@
 #define _LOG_H_
 #pragma once
 
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
 
 #include <iostream>
 #include "CConfig.hpp"

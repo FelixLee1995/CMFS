@@ -28,34 +28,37 @@ size_t CMarketDataManager::LoadInstrumentFromCSV(const std::string& filePath)
     }
 
     std::string instrumentID;
-    char MarketType;
-    std::string expireDate;
-    std::string exchangeID;
-
-    while (ifs >> instrumentID >> MarketType >> expireDate >> exchangeID)
+    
+    while (!ifs.eof())
     {
-        SPDLOG_INFO("load instrument: id {}, marketType {}, expireDate {}, exchangeID {}", 
-            instrumentID, MarketType, expireDate, exchangeID);
+        getline(ifs, instrumentID);
+
+        if(instrumentID.empty())
+        {
+            continue;
+        }
+
+        SPDLOG_INFO("load instrument: id {}", 
+            instrumentID);
             
 
         CMarketDataExtField data;
-        strcpy(data.ExchangeID, exchangeID.c_str());
         strcpy(data.InstrumentID, instrumentID.c_str());
-        data.UpdateMillisec = 100;
-        strcpy(data.UpdateTime, "10:12:12");
-        data.AskPrice1 = 100;
-        data.AskVolume1 = 12;
-        data.LastPrice = 123;
-        data.Volume = 10;
-        data.OpenPrice = 121;
-        data.PreClosePrice = 123;
-        data.UpperLimitPrice = 150;
-        data.LowerLimitPrice = 100;
-        data.HighestPrice = 130;
-        data.LowestPrice = 115;
-        data.ClosePrice = 134;
-        data.SettlementPrice = 113;
-        data.Turnover = 140;
+        data.UpdateMillisec = 0;
+        strcpy(data.UpdateTime, "00:00:00");
+        data.AskPrice1 = 0;
+        data.AskVolume1 = 0;
+        data.LastPrice = 0;
+        data.Volume = 0;
+        data.OpenPrice = __DBL_MAX__;
+        data.PreClosePrice = __DBL_MAX__;
+        data.UpperLimitPrice = __DBL_MAX__;
+        data.LowerLimitPrice = __DBL_MAX__;
+        data.HighestPrice = __DBL_MAX__;
+        data.LowestPrice = __DBL_MAX__;
+        data.ClosePrice = __DBL_MAX__;
+        data.SettlementPrice = __DBL_MAX__;
+        data.Turnover = 0;
 
         m_MarketDataMap.try_emplace(instrumentID, data);
         instr_count++;
