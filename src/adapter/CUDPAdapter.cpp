@@ -189,42 +189,42 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
             {
                 case 1:
                 {
-                    marketData.AskPrice1 = st->AskPrice;
-                    marketData.AskVolume1 = st->AskVolume;
-                    marketData.BidPrice1 = st->BidPrice;
-                    marketData.BidVolume1 = st->BidVolume;
+                    marketData.AskPrice1 = MY_HTONF(st->AskPrice);
+                    marketData.AskVolume1 = htonl(st->AskVolume);
+                    marketData.BidPrice1 = MY_HTONF(st->BidPrice);
+                    marketData.BidVolume1 = htonl(st->BidVolume);
                     break;
                 }
                 case 2:
                 {
-                    marketData.AskPrice2 = st->AskPrice;
-                    marketData.AskVolume2 = st->AskVolume;
-                    marketData.BidPrice2 = st->BidPrice;
-                    marketData.BidVolume2 = st->BidVolume;
+                    marketData.AskPrice2 = MY_HTONF(st->AskPrice);
+                    marketData.AskVolume2 = htonl(st->AskVolume);
+                    marketData.BidPrice2 = MY_HTONF(st->BidPrice);
+                    marketData.BidVolume2 = htonl(st->BidVolume);
                     break;
                 }
                 case 3:
                 {
-                    marketData.AskPrice3 = st->AskPrice;
-                    marketData.AskVolume3 = st->AskVolume;
-                    marketData.BidPrice3 = st->BidPrice;
-                    marketData.BidVolume3 = st->BidVolume;
+                    marketData.AskPrice3 = MY_HTONF(st->AskPrice);
+                    marketData.AskVolume3 = htonl(st->AskVolume);
+                    marketData.BidPrice3 = MY_HTONF(st->BidPrice);
+                    marketData.BidVolume3 = htonl(st->BidVolume);
                     break;
                 }
                 case 4:
                 {
-                    marketData.AskPrice4 = st->AskPrice;
-                    marketData.AskVolume4 = st->AskVolume;
-                    marketData.BidPrice4 = st->BidPrice;
-                    marketData.BidVolume4 = st->BidVolume;
+                    marketData.AskPrice4 = MY_HTONF(st->AskPrice);
+                    marketData.AskVolume4 = htonl(st->AskVolume);
+                    marketData.BidPrice4 = MY_HTONF(st->BidPrice);
+                    marketData.BidVolume4 = htonl(st->BidVolume);
                     break;
                 }
                 case 5:
                 {
-                    marketData.AskPrice5 = st->AskPrice;
-                    marketData.AskVolume5 = st->AskVolume;
-                    marketData.BidPrice5 = st->BidPrice;
-                    marketData.BidVolume5 = st->BidVolume;
+                    marketData.AskPrice5 = MY_HTONF(st->AskPrice);
+                    marketData.AskVolume5 = htonl(st->AskVolume);
+                    marketData.BidPrice5 = MY_HTONF(st->BidPrice);
+                    marketData.BidVolume5 = htonl(st->BidVolume);
                     break;
                 }
                 default:
@@ -243,12 +243,15 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
 
 void MyUdpApi::OnRspLastSnapshot(const GtjaDepthMarketDataField *pDepthMarketData)
 {
-    // std::cout << "OnRspLastSnapshot:" << pDepthMarketData->InstrumentID << "\t" << pDepthMarketData->UpdateTime << "."
-    //           << pDepthMarketData->UpdateMillisec;
-    // std::cout << "\t" << pDepthMarketData->LastPrice << "\t" << pDepthMarketData->Volume;
-    // std::cout << "\t" << pDepthMarketData->BidPrice1 << "\t" << pDepthMarketData->BidVolume1 << "\t"
-    //           << pDepthMarketData->AskPrice1 << "\t" << pDepthMarketData->AskVolume1;
+
+    m_MarketDataManager->UpdateMarketData(pDepthMarketData->InstrumentID, [&](CMarketDataExtField &marketData) {
+
+        memcpy(&marketData, pDepthMarketData, sizeof(GtjaDepthMarketDataField));
+
+    });
 }
+
+
 std::string MyUdpApi::ConvertExchange(uint8_t exchange)
 {
     switch(exchange)

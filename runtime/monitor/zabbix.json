@@ -6,5 +6,5 @@
   "zabbix_port": 10051,
   "zabbix_server": "124.70.160.114",
   "zabbix_submit_rule": "MONITOR",
-  "health_check_port": 18004
+  "health_check_port": 1800
 }

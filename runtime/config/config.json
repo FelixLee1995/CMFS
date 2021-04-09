@@ -3,7 +3,7 @@
         "port": 42116
     },
     "front": {
-        "port": 7002
+        "port": 7001
     },
     "log": {
         "level": "Info",
