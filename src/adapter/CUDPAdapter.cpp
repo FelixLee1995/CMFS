@@ -141,7 +141,7 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
     //                  << pMBL[0].AskVolume;
     //    }
 
-
+    SPDLOG_INFO("Rtn marketdata, {}, vol {}", pInstrument->InstrumentID, pTradeInfo->Volume);
 
     CMarketDataExtField marketDataOut;
 
@@ -152,7 +152,7 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
         auto updateTime = fmt::format("{:02d}:{:02d}:{:02d}", pStamp->Time.Hour, pStamp->Time.Minite, pStamp->Time.Seccond);
 
         strcpy(marketData.UpdateTime, updateTime.c_str());
-        marketData.UpdateMillisec = pStamp->Time.MilliSec;
+        marketData.UpdateMillisec = htonl(pStamp->Time.MilliSec);
 
         if (pTradeInfo)
         {
@@ -174,7 +174,8 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
 
         if (pStaticInfo)
         {
-            marketData.OpenPrice = MY_HTONF(pStaticInfo->OpenPrice);
+            std::cout << "highestPrice " << pStaticInfo->HighestPrice << std::endl;
+             marketData.OpenPrice = MY_HTONF(pStaticInfo->OpenPrice);
             marketData.ClosePrice = MY_HTONF(pStaticInfo->ClosePrice);
             marketData.SettlementPrice = MY_HTONF(pStaticInfo->SettlementPrice);
             marketData.HighestPrice = MY_HTONF(pStaticInfo->HighestPrice);
@@ -243,14 +244,59 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
 
 void MyUdpApi::OnRspLastSnapshot(const GtjaDepthMarketDataField *pDepthMarketData)
 {
-
     m_MarketDataManager->UpdateMarketData(pDepthMarketData->InstrumentID, [&](CMarketDataExtField &marketData) {
+        strcpy(marketData.InstrumentID, pDepthMarketData->InstrumentID);
 
-        memcpy(&marketData, pDepthMarketData, sizeof(GtjaDepthMarketDataField));
+        // 无交易所字段？？
+        //strcpy(marketData.ExchangeID, ConvertExchange(pDepthMarketData->ExchangeID).c_str());
 
+        //auto updateTime = fmt::format("{:02d}:{:02d}:{:02d}", pStamp->Time.Hour, pStamp->Time.Minite, pStamp->Time.Seccond);
+
+        strcpy(marketData.UpdateTime, pDepthMarketData->UpdateTime);
+        marketData.UpdateMillisec = htonl(pDepthMarketData->UpdateMillisec);
+
+        marketData.LastPrice = MY_HTONF(pDepthMarketData->LastPrice);
+        marketData.Turnover = MY_HTONF(pDepthMarketData->Turnover);
+        marketData.OpenInterest = MY_HTONF(pDepthMarketData->OpenInterest);
+        marketData.Volume = htonl((int)pDepthMarketData->Volume);
+
+        strcpy(marketData.TradingDay, pDepthMarketData->TradingDay);
+        marketData.PreSettlementPrice = MY_HTONF(pDepthMarketData->PreSettlementPrice);
+        marketData.PreClosePrice = MY_HTONF(pDepthMarketData->PreClosePrice);
+        marketData.PreOpenInterest = MY_HTONF(pDepthMarketData->PreOpenInterest);
+        marketData.UpperLimitPrice = MY_HTONF(pDepthMarketData->UpperLimitPrice);
+        marketData.LowerLimitPrice = MY_HTONF(pDepthMarketData->LowerLimitPrice);
+
+        marketData.OpenPrice = MY_HTONF(pDepthMarketData->OpenPrice);
+        marketData.ClosePrice = MY_HTONF(pDepthMarketData->ClosePrice);
+        marketData.SettlementPrice = MY_HTONF(pDepthMarketData->SettlementPrice);
+
+        marketData.AskPrice1 = MY_HTONF(pDepthMarketData->AskPrice1);
+        marketData.AskVolume1 = htonl(pDepthMarketData->AskVolume1);
+        marketData.BidPrice1 = MY_HTONF(pDepthMarketData->BidPrice1);
+        marketData.BidVolume1 = htonl(pDepthMarketData->BidVolume1);
+
+        marketData.AskPrice2 = MY_HTONF(pDepthMarketData->AskPrice2);
+        marketData.AskVolume2 = htonl(pDepthMarketData->AskVolume2);
+        marketData.BidPrice2 = MY_HTONF(pDepthMarketData->BidPrice2);
+        marketData.BidVolume2 = htonl(pDepthMarketData->BidVolume2);
+
+        marketData.AskPrice3 = MY_HTONF(pDepthMarketData->AskPrice3);
+        marketData.AskVolume3 = htonl(pDepthMarketData->AskVolume3);
+        marketData.BidPrice3 = MY_HTONF(pDepthMarketData->BidPrice3);
+        marketData.BidVolume3 = htonl(pDepthMarketData->BidVolume3);
+
+        marketData.AskPrice4 = MY_HTONF(pDepthMarketData->AskPrice3);
+        marketData.AskVolume4 = htonl(pDepthMarketData->AskVolume3);
+        marketData.BidPrice4 = MY_HTONF(pDepthMarketData->BidPrice3);
+        marketData.BidVolume4 = htonl(pDepthMarketData->BidVolume3);
+
+        marketData.AskPrice5 = MY_HTONF(pDepthMarketData->AskPrice3);
+        marketData.AskVolume5 = htonl(pDepthMarketData->AskVolume3);
+        marketData.BidPrice5 = MY_HTONF(pDepthMarketData->BidPrice3);
+        marketData.BidVolume5 = htonl(pDepthMarketData->BidVolume3);
     });
 }
-
 
 std::string MyUdpApi::ConvertExchange(uint8_t exchange)
 {

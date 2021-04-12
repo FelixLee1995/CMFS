@@ -1,6 +1,7 @@
 #include "plugin/CMarketDataManager.h"
 #include <regex>
 #include <fstream>
+#include "core/plantformtools.h"
 
 CMarketDataManager::CMarketDataManager()
 {
