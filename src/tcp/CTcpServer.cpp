@@ -34,7 +34,7 @@ void CTcpServer::DoAccept()
             auto session = std::make_shared<CTcpSession>(std::move(socket), m_SessionIdx);
             session->Start();
             {
-                std::lock_guard<std::mutex> guard(m_Mutex);
+                RWMutex::WriteLock guard(m_Mutex);
                 m_SessionMap.emplace(m_SessionIdx, session);  /// TODO  断线时候，  从sessionMap中删除
             }
         }
@@ -168,7 +168,7 @@ int CTcpServer::SendMultiRtnFtdc(TOPICID_TYPE topicId, SessionIdType sessionId, 
 
 int CTcpServer::SendMsg(char *data, unsigned int len, SessionIdType sessionId, TOPICID_TYPE topicId)
 {
-    std::lock_guard<std::mutex> guard(m_Mutex);
+    RWMutex::ReadLock guard(m_Mutex);
 
     auto session_iter = m_SessionMap.find(sessionId);
 

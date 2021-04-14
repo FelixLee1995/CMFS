@@ -11,7 +11,7 @@
 
 #include <atomic>
 #include <map>
-#include <mutex>
+#include "core/mutex.h"
 #include "asio.hpp"
 #include "CTcpSession.h"
 #include "core/CFlow.h"
@@ -36,7 +36,7 @@ class CTcpServer
         asio::ip::tcp::acceptor m_Acceptor;
         std::shared_ptr<CTcpChatroom> m_ChatroomPtr;
         CFlowManager::Sptr m_FlowManager;
-        std::mutex m_Mutex;
+        RWMutex m_Mutex;
     public:
         using Sptr = std::shared_ptr<CTcpServer>;
         CTcpServer(std::size_t maxOnlineUsers, int port, asio::io_context& ctx);

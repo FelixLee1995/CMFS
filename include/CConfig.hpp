@@ -5,13 +5,13 @@
 #include <memory>
 #include "nlohmann/json.hpp"
 #include <fstream>
-#include <mutex>
+#include "core/mutex.h"
 
 
 class CConfig {
 
 private:
-    std::mutex m_ConfigLock;
+    RWMutex m_ConfigLock;
 
     nlohmann::json m_ConfigJson;
 
@@ -31,7 +31,7 @@ public:
 
     template<typename  T>
     T LookupConfig(const std::string& configName, const T& defaultValue) {
-        std::lock_guard<std::mutex> guard(m_ConfigLock);
+        RWMutex::ReadLock guard(m_ConfigLock);
         if (m_ConfigJson.contains(configName)) {
             return m_ConfigJson[configName].get<T>();
         }
@@ -40,7 +40,7 @@ public:
 
     template<typename  T>
     T LookupConfigWithFlatName(const std::string& configName, const T& defaultValue) {
-        std::lock_guard<std::mutex> guard(m_ConfigLock);
+        RWMutex::ReadLock guard(m_ConfigLock);
         auto flatjson = m_ConfigJson.flatten();
         if (flatjson.contains(configName)) {
             return flatjson[configName].get<T>();
