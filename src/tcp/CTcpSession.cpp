@@ -241,6 +241,9 @@ void CTcpSession::do_read_body()
 
 void CTcpSession::deliver(const MessageWrapper &msg)
 {
+
+    RWMutex::WriteLock guard(m_Mutex);
+
     //bool write_in_progress = !m_MsgQueue.size_approx;
     m_MsgQueue.enqueue(msg);
 

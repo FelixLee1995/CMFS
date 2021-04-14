@@ -34,7 +34,7 @@ void CTcpServer::DoAccept()
             auto session = std::make_shared<CTcpSession>(std::move(socket), m_SessionIdx);
             session->Start();
             {
-                RWMutex::WriteLock guard(m_Mutex);
+                //RWMutex::WriteLock guard(m_Mutex);
                 m_SessionMap.emplace(m_SessionIdx, session);  /// TODO  断线时候，  从sessionMap中删除
             }
         }
@@ -90,14 +90,16 @@ int CTcpServer::SendRspFtdc(TOPICID_TYPE topicId, SessionIdType sessionId, ctp_f
     ftdc_crpheader_s->method = ftdc_cmp_compresszero;
     auto senLen = encodedLen + sizeof(ftd_header) + sizeof(ftdc_crpheader);
     SendMsg(encodedData, senLen, sessionId, topicId);
+
+    return 0;
 }
 
 int CTcpServer::SendRtnFtdc(TOPICID_TYPE topicId, SessionIdType sessionId, ctp_ftd::ftdc_tid_type ftdc_tid,
     const char *fieldPtr, size_t fieldLen, ctp_ftd::ftdc_fid_type ftdc_fid)
 {
-    char oriData[2048] = {0};
+    char oriData[1024] = {0};
     unsigned int oriLen = sizeof(ftdc_field_header) + fieldLen + sizeof(ftdc_header);
-    char encodedData[2048] = {0};
+    char encodedData[1024] = {0};
     unsigned int encodedLen = 0;
     char *data = oriData;
     auto ftdc_header_s = (ftdc_header *)data;
@@ -130,9 +132,9 @@ int CTcpServer::SendRtnFtdc(TOPICID_TYPE topicId, SessionIdType sessionId, ctp_f
 int CTcpServer::SendMultiRtnFtdc(TOPICID_TYPE topicId, SessionIdType sessionId, ctp_ftd::ftdc_tid_type ftdc_tid,
     const char *fieldPtr, size_t fieldLen, ctp_ftd::ftdc_fid_type ftdc_fid, size_t cnt)
 {
-    char oriData[4096] = {0};
+    char oriData[8192] = {0};
     unsigned int oriLen = cnt * (sizeof(ftdc_field_header) + fieldLen) + sizeof(ftdc_header);
-    char encodedData[4096] = {0};
+    char encodedData[8192] = {0};
     unsigned int encodedLen = 0;
     char *data = oriData;
     auto ftdc_header_s = (ftdc_header *)data;
@@ -164,11 +166,12 @@ int CTcpServer::SendMultiRtnFtdc(TOPICID_TYPE topicId, SessionIdType sessionId, 
     ftdc_crpheader_s->method = ftdc_cmp_compresszero;
     auto senLen = encodedLen + sizeof(ftd_header) + sizeof(ftdc_crpheader);
     SendMsg(encodedData, senLen, sessionId, topicId);
+    return 0;
 }
 
 int CTcpServer::SendMsg(char *data, unsigned int len, SessionIdType sessionId, TOPICID_TYPE topicId)
 {
-    RWMutex::ReadLock guard(m_Mutex);
+    RWMutex::WriteLock guard(m_Mutex);
 
     auto session_iter = m_SessionMap.find(sessionId);
 

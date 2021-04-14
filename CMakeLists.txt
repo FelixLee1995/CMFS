@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
 
-
+add_definitions(-g)
 
 include(FetchContent)
 
@@ -67,7 +67,7 @@ target_link_libraries(qry_ctp  thosttraderapi_se)
 
 IF(UNIX)
   target_link_libraries(qry_ctp pthread )
-  target_link_libraries(cmfs pthread monitor_dll_x64)
+  target_link_libraries(cmfs pthread)
 ENDIF()
 
 

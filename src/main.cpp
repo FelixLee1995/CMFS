@@ -6,14 +6,11 @@
 #include "plugin/CUserManagePlugin.h"
 #include "plugin/CMarketPlugin.h"
 #include "adapter/CAdapterManager.h"
-#include "monitor/IMonitorApp.h"
 
 int main()
 {
     std::cout << "Hello World!" << std::endl;
 
-
-    mi::factory_func();
 
     InitEnv();
 

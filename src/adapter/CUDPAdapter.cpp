@@ -1,13 +1,11 @@
 #include "adapter/CUDPAdapter.h"
 #include "utils/Utils.h"
-#include "monitor/IMonitorApp.h"
 
 CUdpMarketAdapter::CUdpMarketAdapter(const nlohmann::json &config)
     : IMarketRecvAdapter("UdpMarketAdapter"), api(nullptr), m_WorkFlag(false), m_GuardThread(nullptr)
 {
     api = new MyUdpApi(config);
 
-    mi::g_monitor_->RegisterHealthDetailItem("UdpMarket");
 }
 
 CUdpMarketAdapter::~CUdpMarketAdapter()
@@ -104,7 +102,6 @@ void MyUdpApi::OnFrontConnected()
 void MyUdpApi::OnFrontDisconnected(int nReason)
 {
     m_ConnectStatus.store(false);
-    mi::g_monitor_->MonitorOut("UdpMarket", "OnFrontDisconnected", mi::Error);
 }
 
 ///登录请求响应
@@ -113,19 +110,11 @@ void MyUdpApi::OnRspUserLogin(
 {
     if (pRspInfo && pRspInfo->ErrorID == 0)
     {
-        m_ConnectStatus.store(true);
-        auto msg = fmt::format("RspUserLogin Succ");
-        SPDLOG_INFO(msg);
-        mi::g_monitor_->MonitorOut("UdpMarket", "Login Success", mi::Normal);
-
-        
+        m_ConnectStatus.store(true);     
     }
     else if (pRspInfo && pRspInfo->ErrorID != 0)
     {
         m_ConnectStatus.store(false);
-        auto msg = fmt::format("RspUserLogin,Error:{},{}", pRspInfo->ErrorID, pRspInfo->ErrorMsg);
-        SPDLOG_ERROR(msg);
-        mi::g_monitor_->MonitorOut("UdpMarket", msg.c_str(), mi::Error);
     }
 }
 

@@ -31,7 +31,9 @@ class CMsgFlow:public OBEvent<std::function<void(const Msg&)>>{
 
 public:
 
-    CMsgFlow(): queue_([this](auto && param) { Proc(std::forward<decltype(param)>(param)); }){}
+    CMsgFlow()
+    //: queue_([this](auto && param) { Proc(std::forward<decltype(param)>(param)); })
+    {}
 
     void start() {
 
@@ -42,11 +44,12 @@ public:
     void react() {}
 
     ~CMsgFlow() {
-        queue_.Stop();
+        //queue_.Stop();
     }
 
     int InQueue(const Msg &msg) {
-        return queue_.EnQueue(msg) ? 1 : 0;
+        //return queue_.EnQueue(msg) ? 1 : 0;
+        return 0;
     };
 
     void Proc(const Msg& msg) {
@@ -57,7 +60,7 @@ private:
     // std::atomic<uint64_t> seq_no_;
     // std::atomic<uint64_t> cur_idx_;
 
-    BlockingConcurrentQueue<Msg, 1024> queue_;
+    //BlockingConcurrentQueue<Msg, 1024> queue_;
 };
 
 
@@ -103,7 +106,7 @@ class CFlowManager{
             auto iter = m_flows.find(std::make_tuple(msg.Header.TopicId, msg.Header.FuncId));
 
             if (iter != m_flows.end()) {
-                return iter->second->InQueue(msg);
+                return iter->second->NotifyAll(msg);
             }
             return TOPIC_NOT_EXISTS;
         }

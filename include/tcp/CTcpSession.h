@@ -103,6 +103,7 @@ private:
     MessageWrapper m_Msg;
     MessageQueue m_MsgQueue;
     uint32_t m_SessionId;
+    RWMutex m_Mutex;
 
 public:
     using Sptr = std::shared_ptr<CTcpSession>;
