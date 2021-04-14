@@ -1,5 +1,5 @@
 ﻿//
-// Created by lf729 on 2020/9/21.
+// Created by felix on 2020/9/21.
 //
 
 #ifndef FINANACE_MARKET_BASEHEADER_H
@@ -7,9 +7,7 @@
 
 #pragma once
 
-#include <spdlog/spdlog.h>
-
-
+#include "CLog.h"
 #include "ds/common.h"
 #include "ds/CDefine.h"
 #include "ds/bizDataStruct.h"

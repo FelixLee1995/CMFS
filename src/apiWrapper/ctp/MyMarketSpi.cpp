@@ -1,17 +1,16 @@
-#include <fstream>
-#include <chrono>
-#include <vector>
 #include "apiWrapper/ctp/MyMarketSpi.h"
-#include "api/ctp_ext/ctp_ftdc_proto.h"
+#include <chrono>
+#include <fstream>
+#include <vector>
 #include "adapter/IAdapter.h"
+#include "api/ctp_ext/ctp_ftdc_proto.h"
 #include "core/singleton.h"
 #include "utils/Utils.h"
 
 using namespace ctp_ftd;
 
-MyMarketSpi::MyMarketSpi(MyMarketApi *api) : m_api_(api) 
+MyMarketSpi::MyMarketSpi(MyMarketApi *api) : m_api_(api)
 {
-
     m_FlowManager.reset(Singleton<CFlowManager>::GetInstance());
     m_MarketDataManager.reset(Singleton<CMarketDataManager>::GetInstance());
 }
@@ -118,31 +117,30 @@ void MyMarketSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
         marketData.HighestPrice = MY_HTONF(pDepthMarketData->HighestPrice);
         marketData.LowestPrice = MY_HTONF(pDepthMarketData->LowestPrice);
 
-        marketData.BidPrice1 =  MY_HTONF(pDepthMarketData->BidPrice1);
-        marketData.BidVolume1 =  MY_HTONF(pDepthMarketData->BidVolume1);
-        marketData.AskPrice1 =  MY_HTONF(pDepthMarketData->AskPrice1);
-        marketData.AskVolume1 =  MY_HTONF(pDepthMarketData->AskVolume1);
+        marketData.BidPrice1 = MY_HTONF(pDepthMarketData->BidPrice1);
+        marketData.BidVolume1 = MY_HTONF(pDepthMarketData->BidVolume1);
+        marketData.AskPrice1 = MY_HTONF(pDepthMarketData->AskPrice1);
+        marketData.AskVolume1 = MY_HTONF(pDepthMarketData->AskVolume1);
 
-        marketData.BidPrice2 =  MY_HTONF(pDepthMarketData->BidPrice2);
-        marketData.BidVolume2 =  MY_HTONF(pDepthMarketData->BidVolume2);
-        marketData.AskPrice2 =  MY_HTONF(pDepthMarketData->AskPrice2);
-        marketData.AskVolume2 =  MY_HTONF(pDepthMarketData->AskVolume2);
+        marketData.BidPrice2 = MY_HTONF(pDepthMarketData->BidPrice2);
+        marketData.BidVolume2 = MY_HTONF(pDepthMarketData->BidVolume2);
+        marketData.AskPrice2 = MY_HTONF(pDepthMarketData->AskPrice2);
+        marketData.AskVolume2 = MY_HTONF(pDepthMarketData->AskVolume2);
 
-        marketData.BidPrice3 =  MY_HTONF(pDepthMarketData->BidPrice3);
-        marketData.BidVolume3 =  MY_HTONF(pDepthMarketData->BidVolume3);
-        marketData.AskPrice3 =  MY_HTONF(pDepthMarketData->AskPrice3);
-        marketData.AskVolume3 =  MY_HTONF(pDepthMarketData->AskVolume3);
+        marketData.BidPrice3 = MY_HTONF(pDepthMarketData->BidPrice3);
+        marketData.BidVolume3 = MY_HTONF(pDepthMarketData->BidVolume3);
+        marketData.AskPrice3 = MY_HTONF(pDepthMarketData->AskPrice3);
+        marketData.AskVolume3 = MY_HTONF(pDepthMarketData->AskVolume3);
 
-        marketData.BidPrice4 =  MY_HTONF(pDepthMarketData->BidPrice4);
-        marketData.BidVolume4 =  MY_HTONF(pDepthMarketData->BidVolume4);
-        marketData.AskPrice4 =  MY_HTONF(pDepthMarketData->AskPrice4);
-        marketData.AskVolume4 =  MY_HTONF(pDepthMarketData->AskVolume4);
+        marketData.BidPrice4 = MY_HTONF(pDepthMarketData->BidPrice4);
+        marketData.BidVolume4 = MY_HTONF(pDepthMarketData->BidVolume4);
+        marketData.AskPrice4 = MY_HTONF(pDepthMarketData->AskPrice4);
+        marketData.AskVolume4 = MY_HTONF(pDepthMarketData->AskVolume4);
 
-        marketData.BidPrice5 =  MY_HTONF(pDepthMarketData->BidPrice5);
-        marketData.BidVolume5 =  MY_HTONF(pDepthMarketData->BidVolume5);
-        marketData.AskPrice5 =  MY_HTONF(pDepthMarketData->AskPrice5);
-        marketData.AskVolume5 =  MY_HTONF(pDepthMarketData->AskVolume5);
-
+        marketData.BidPrice5 = MY_HTONF(pDepthMarketData->BidPrice5);
+        marketData.BidVolume5 = MY_HTONF(pDepthMarketData->BidVolume5);
+        marketData.AskPrice5 = MY_HTONF(pDepthMarketData->AskPrice5);
+        marketData.AskVolume5 = MY_HTONF(pDepthMarketData->AskVolume5);
 
         strcpy(marketData.UpdateTime, pDepthMarketData->UpdateTime);
         strcpy(marketData.ActionDay, pDepthMarketData->ActionDay);
@@ -150,6 +148,6 @@ void MyMarketSpi::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMar
         marketDataOut = marketData;
     });
 
-    PUB_BIZ_MSG_TO_PLUGIN(m_FlowManager, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketDataOut,
-        sizeof(CMarketDataExtField), 1);
+    m_FlowManager->PubBizMsg2Plugin(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0,
+        reinterpret_cast<const char *>(&marketDataOut), sizeof(CMarketDataExtField), 1);
 }

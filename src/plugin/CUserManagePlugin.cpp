@@ -67,16 +67,15 @@ void CUserManagePlugin::HandleUserLogin(const Msg &msg)
     strcpy(specRspInfoField.UserID, loginField->UserID);
     std::string timestr = GetFormatTimeStr9();
     strcpy(specRspInfoField.LoginTime, timestr.c_str());
-    strcpy(specRspInfoField.TradingDay, "20210226");
+    strcpy(specRspInfoField.TradingDay, "20210226");    // TODO  交易日真实填充
     strcpy(specRspInfoField.SystemName, "CMFS");
     specRspInfoField.FrontID = htonl(10);
     specRspInfoField.SessionID = htonl(46);
 
-
-    TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspUserLogin, CThostFtdcRspUserLoginField, &specRspInfoField, 
-            ftdc_fid_RspUserLoginField, std::get<0>(ret), std::get<1>(ret).c_str());
+    m_TcpServer->SendRspFtdc(TOPIC_USER_MANAGE, sessionId, ftdc_tid_RspUserLogin,
+        reinterpret_cast<const char *>(&specRspInfoField), sizeof(CThostFtdcRspUserLoginField), ftdc_fid_RspUserLoginField,
+        std::get<0>(ret), std::get<1>(ret).c_str());
     return;
-
 }
 
 
@@ -143,7 +142,7 @@ void CUserManagePlugin::HandleUserLogout(const Msg &msg)
 
 void CUserManagePlugin::HandleUserDisconnect(const Msg& msg)
 {
-    auto ret = m_UserSessionManager->HandleUserLogout(msg.Header.SessionId);
+    m_UserSessionManager->HandleUserLogout(msg.Header.SessionId);
     SPDLOG_INFO("user disconnect, sessionid: {}", msg.Header.SessionId);
 
     /// TODO reset marketDataManager中 各个item 的subscribers中相应的Index

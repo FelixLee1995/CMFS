@@ -9,11 +9,11 @@
 #include <atomic>
 #include <map>
 #include <tuple>
+#include <cstring>
 #include <ds/common.h>
 #include <core/OBEvent.h>
 #include <core/ConcurrentQueue.h>
 #include <core/BlockingConcurrentQueue.h>
-
 #include <ds/CDefine.h>
 
 enum {
@@ -114,6 +114,19 @@ class CFlowManager{
             return 0;
         }
 
+        void PubBizMsg2Plugin(
+            TOPICID_TYPE topicId, FUNCID_TYPE funcId, SessionIdType sessionId, const char *content, size_t len, size_t cnt)
+        {
+            Msg msg{};
+            memset(&msg, 0, sizeof(msg));
+            msg.Header.Count = cnt;
+            msg.Header.TopicId = topicId;
+            msg.Header.FuncId = funcId;
+            msg.Header.SessionId = sessionId;
+            msg.Header.ContentLen = len;
+            memcpy(msg.Pack, content, len);
+            PublishMsg(msg);
+        }
 
     private:
 

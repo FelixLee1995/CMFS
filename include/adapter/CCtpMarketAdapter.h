@@ -12,12 +12,15 @@
 #include "adapter/IAdapter.h"
 #include "apiWrapper/ctp/MyMarketApi.h"
 
+class MyMarketApi;
+
 class CCtpMarketAdapter : public IMarketRecvAdapter
 {
 private:
     MyMarketApi::Ptr m_api;
 
 public:
+    using Sptr = std::shared_ptr<CCtpMarketAdapter>;
     explicit CCtpMarketAdapter(const nlohmann::json &config);
     void Init() override;
     void Stop() override;

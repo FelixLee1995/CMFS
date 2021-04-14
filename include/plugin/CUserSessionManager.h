@@ -32,12 +32,13 @@ public:
     /// 检查session是否是新的
     bool CheckIfNewSession(const UserSessionIdType &id);
 
+    /// 检查该用户是否授权
     bool CheckIfAuthorized(const std::string &userId);
 
     /// 返回值为UserSessionVec中的index, 用于直接操作行情的subscribers表
     int CheckIfLogin(const UserSessionIdType &id);
 
-    //根据subscribers列表， 计算出需要推送的用户set
+    /// 根据subscribers列表， 计算出需要推送的用户set
     void CheckIfSubs(std::bitset<MAX_ONLINE_USERS>& subscribers, std::set<SessionIdType>&);
 
     bool AddUserSession(SessionIdType sessionID);

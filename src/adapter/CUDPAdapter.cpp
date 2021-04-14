@@ -68,7 +68,6 @@ MyUdpApi::MyUdpApi(const nlohmann::json &config): m_IsConnecting(false), m_Conne
     m_FlowManager.reset(Singleton<CFlowManager>::GetInstance());
     m_MarketDataManager.reset(Singleton<CMarketDataManager>::GetInstance());
 
-
     m_Path = config["path"].get<std::string>();
     m_Username = config["username"].get<std::string>();
     m_Pwd = config["pwd"].get<std::string>();
@@ -141,7 +140,7 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
     //                  << pMBL[0].AskVolume;
     //    }
 
-    SPDLOG_INFO("Rtn marketdata, {}, vol {}", pInstrument->InstrumentID, pTradeInfo->Volume);
+    //SPDLOG_INFO("Rtn marketdata, {}, vol {}", pInstrument->InstrumentID, pTradeInfo->Volume);
 
     CMarketDataExtField marketDataOut;
 
@@ -238,7 +237,7 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
         marketDataOut = marketData;
     });
 
-    PUB_BIZ_MSG_TO_PLUGIN(m_FlowManager, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketDataOut,
+    m_FlowManager->PubBizMsg2Plugin(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, reinterpret_cast<const char*>(&marketDataOut),
         sizeof(CMarketDataExtField), 1);
 }
 

@@ -3,23 +3,8 @@
 //
 
 #include "tcp/CTcpSession.h"
-#include "core/singleton.h"
 #include "CLog.h"
-
-
-#define PUB_BIZ_MSG_TO_PLUGIN(SERVER_SPTR, TOPIC_ID, FUNC_ID, SESSION_ID, CONTENT, LEN, CNT) \
-    do                                                       \
-    {                                                        \
-        Msg msg{};                                           \
-        memset(&msg, 0, sizeof(msg));                        \
-        msg.Header.Count = CNT;                              \
-        msg.Header.TopicId = TOPIC_ID;                       \
-        msg.Header.FuncId = FUNC_ID;                         \
-        msg.Header.SessionId = SESSION_ID;                   \
-        msg.Header.ContentLen = LEN;                         \
-        memcpy(msg.Pack, CONTENT, LEN);                      \
-        SERVER_SPTR->PubBizMsg(msg);                         \
-    }while(0);                                               \
+#include "core/singleton.h"
 
 CRevcBuffer::CRevcBuffer()
 {
@@ -103,13 +88,12 @@ void MessageWrapper::encode_header()
     std::memcpy(data_, header, header_length);
 }
 
-
-
-
 CTcpSession::CTcpSession(tcp::socket socket, SessionIdType sessionId)
     : m_Socket(std::move(socket)), m_RecvBuffer(), m_SessionId(sessionId)
 {
     m_Server.reset(Singleton<CTcpServer>::GetInstance());
+    m_FlowManager.reset(Singleton<CFlowManager>::GetInstance());
+    assert(m_Server);
 }
 
 void CTcpSession::Start()
@@ -122,17 +106,12 @@ void CTcpSession::DoReadHeader()
     auto self(shared_from_this());
     asio::async_read(m_Socket, asio::buffer(m_Msg.data(), MessageWrapper::header_length),
         [this, self](asio::error_code ec, std::size_t /*length*/) {
-
-
             if (ec)
             {
                 /// ec 表示读取错误
                 SPDLOG_ERROR("asio read failed: {}", ec.message());
 
-                
-
-                PUB_BIZ_MSG_TO_PLUGIN(
-                                m_Server, TOPIC_USER_MANAGE, FUNC_REQ_USER_DISCONNECT, m_SessionId, nullptr, 0, 1);
+                m_FlowManager->PubBizMsg2Plugin(TOPIC_USER_MANAGE, FUNC_REQ_USER_DISCONNECT, m_SessionId, nullptr, 0, 1);
                 /// TODO　发送到业务层。　通知客户下线
                 return;
             }
@@ -171,6 +150,7 @@ void CTcpSession::do_read_body()
                         break;
                     }
 
+                    /// 解ftdc包
                     auto offset = sizeof(ftdc_crpheader) + m_Msg.ext_len_;
                     ftdc_header *ftdcheader = (ftdc_header *)(m_Msg.body() + offset);
                     auto cnt = ntohs(ftdcheader->ftdc_field_count);
@@ -180,8 +160,8 @@ void CTcpSession::do_read_body()
                     uint32_t req_id = ntohl(ftdcheader->ftdc_req_id);
                     uint16_t contenLen = ntohs(ftdcheader->ftdc_content_len);
 
-
-                    SPDLOG_DEBUG("topicid is {}, seriesID is {}, seq_no is {}, reqid_is {}", topicID, seriesID, seq_no, req_id);
+                    SPDLOG_DEBUG(
+                        "topicid is {}, seriesID is {}, seq_no is {}, reqid_is {}", topicID, seriesID, seq_no, req_id);
 
                     auto contenLenCheck = contenLen < MSG_PACK_MAX_LENGTH;
                     if (contenLenCheck == false)
@@ -192,6 +172,7 @@ void CTcpSession::do_read_body()
 
                     char *content = reinterpret_cast<char *>(ftdcheader) + sizeof(ftdc_header);
 
+                    /// 根据topciID 进行业务处理
                     switch (topicID)
                     {
                         case ftdc_fid_SOPT_Req_Init:
@@ -208,7 +189,6 @@ void CTcpSession::do_read_body()
                             MessageWrapper msg;
                             memcpy(msg.data_, bInitRsp, sizeof(bInitRsp));
                             msg.body_length_ = sizeof(bInitRsp) - 4;
-
                             deliver(msg);
                             break;
                         }
@@ -220,33 +200,35 @@ void CTcpSession::do_read_body()
                             deliver(msg);
                             break;
                         }
+                        /// 用户登录请求
                         case ftdc_fid_ReqLogin:
                         {
-                            PUB_BIZ_MSG_TO_PLUGIN(m_Server, TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGIN, m_SessionId, content,
-                                contenLen, cnt);
+                            m_FlowManager->PubBizMsg2Plugin(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGIN, m_SessionId, content, contenLen, cnt);
                             break;
                         }
 
-                         case ftdc_fid_ReqUserLogout:
+                            /// 用户登出请求
+                        case ftdc_fid_ReqUserLogout:
                         {
-                            PUB_BIZ_MSG_TO_PLUGIN(m_Server, TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGOUT, m_SessionId, content,
-                                contenLen, cnt);
+                            m_FlowManager->PubBizMsg2Plugin(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGOUT, m_SessionId, content, contenLen, cnt);
                             break;
                         }
+                        /// 行情订阅请求
                         case ftdc_fid_ReqSub:
                         {
-                            PUB_BIZ_MSG_TO_PLUGIN(
-                                m_Server, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SUB, m_SessionId, content, contenLen, cnt);
+                            m_FlowManager->PubBizMsg2Plugin(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SUB, m_SessionId, content, contenLen, cnt);
                             break;
                         }
+
+                        /// 取消订阅请求
                         case ftdc_fid_ReqUnsub:
                         {
-                            PUB_BIZ_MSG_TO_PLUGIN(
-                                m_Server, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_UNSUB, m_SessionId, content, contenLen, cnt);
+                            m_FlowManager->PubBizMsg2Plugin(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_UNSUB, m_SessionId,
+                                content, contenLen, cnt);
                             break;
                         }
                         default:
-                            printf("content is %s\n", content);
+                            SPDLOG_ERROR("unsupported requestType: {}", topicID);
                             break;
                     }
 
@@ -254,7 +236,6 @@ void CTcpSession::do_read_body()
 
                 DoReadHeader();
             }
-          
         });
 }
 
@@ -262,9 +243,8 @@ void CTcpSession::deliver(const MessageWrapper &msg)
 {
     //bool write_in_progress = !m_MsgQueue.size_approx;
     m_MsgQueue.enqueue(msg);
- 
+
     DoWrite();
-    
 }
 
 void CTcpSession::DoWrite()
@@ -276,12 +256,11 @@ void CTcpSession::DoWrite()
     {
         return;
     }
-    asio::async_write(m_Socket, asio::buffer(msg.data(), msg.length()),
-        [this, self](asio::error_code ec, std::size_t /*length*/) {
+    asio::async_write(
+        m_Socket, asio::buffer(msg.data(), msg.length()), [this, self](asio::error_code ec, std::size_t /*length*/) {
             if (!ec)
             {
                 DoWrite();
             }
-       
         });
 }

@@ -24,7 +24,7 @@ int main()
     auto port = configIns->LookupConfigWithFlatName<int>("/front/port", 0);
 
 
-    auto tcpServerPtr = Singleton<CTcpServer>::Instance(1024, port, ctx);
+    auto tcpServerPtr = Singleton<CTcpServer>::Instance(MAX_ONLINE_USERS, port, ctx);
 
  
 

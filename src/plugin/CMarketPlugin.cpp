@@ -23,10 +23,6 @@ void CMarketPlugin::Init()
     Subscribe(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN);
     Subscribe(TOPIC_USER_MANAGE, FUNC_REQ_USER_TIMEOUT);
 
-    std::cout << "sizeof CMarketDataExtField is " <<  sizeof(CMarketDataExtField) << std::endl; 
-    std::cout << "sizeof CThostFtdcDepthMarketDataField is " <<  sizeof(CThostFtdcDepthMarketDataField) << std::endl; 
-
-    
 }
 void CMarketPlugin::MsgHandler(const Msg &msg)
 {
@@ -119,14 +115,14 @@ void CMarketPlugin::HandleSub(const Msg &msg)
         for (auto instr : instrsVec) 
         {
             strcpy(specField.InstrumentID, instr.c_str());
-            TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspSubMarketData, CThostFtdcSpecificInstrumentField, &specField, 
+            m_TcpServer->SendRspFtdc(TOPIC_USER_MANAGE, sessionId, ftdc_tid_RspSubMarketData, reinterpret_cast<const char*> (&specField), sizeof(CThostFtdcSpecificInstrumentField),
                 ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
         }
     }
     /// 订阅失败， 只发送一条
     else
     {
-        TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspSubMarketData, CThostFtdcSpecificInstrumentField, &specField, 
+        m_TcpServer->SendRspFtdc(TOPIC_USER_MANAGE, sessionId, ftdc_tid_RspSubMarketData, reinterpret_cast<const char*> (&specField), sizeof(CThostFtdcSpecificInstrumentField),
                 ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
     }
 
@@ -156,24 +152,23 @@ void CMarketPlugin::HandleSub(const Msg &msg)
 
         if (dataVec.size() >= 10)
         {
-            TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-            CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+            m_TcpServer->SendMultiRtnFtdc(TOPIC_MARKET_PROCESS, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+                reinterpret_cast<const char *>(dataVec.data()), sizeof(CMarketDataExtField), ftdc_fid_DepthMarketDataField,
+                dataVec.size());
             dataVec.clear();
 
             CommonSleep(1);
         }
-
     }
 
     if (dataVec.size() > 0)
     {
         //auto cnt = dataVec.size();
-        TCP_SEND_MULTI_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, sessionId, ftdc_tid_RtnDepthMarketData_snap,
-            CMarketDataExtField, dataVec.data(), dataVec.size(), ftdc_fid_DepthMarketDataField);
+        m_TcpServer->SendMultiRtnFtdc(TOPIC_MARKET_PROCESS, sessionId, ftdc_tid_RtnDepthMarketData_snap,
+            reinterpret_cast<const char *>(dataVec.data()), sizeof(CMarketDataExtField), ftdc_fid_DepthMarketDataField,
+            dataVec.size());
     }
 }
-
-
 
 size_t CMarketPlugin::SubMarketByOneRule(SessionIdType sessionid, int16_t index, const std::string& rule, std::set<CMarketDataExtField, MarketDataCmp>& dataSet)
 {
@@ -268,7 +263,7 @@ void CMarketPlugin::HandleUnsub(const Msg &msg)
     }
     else
     {
-        error_id = 6;  ///TODO　定义同一的功能号
+        error_id = 6;  ///TODO　定义统一的功能号和错误码
         error_msg = "User not login yet";
     }
 
@@ -282,16 +277,16 @@ void CMarketPlugin::HandleUnsub(const Msg &msg)
         for (auto instr : instrsVec)
         {
             strcpy(specField.InstrumentID, instr.c_str());
-            TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspUnSubMarketData,
-                CThostFtdcSpecificInstrumentField, &specField, ftdc_fid_SpecificInstrumentField, error_id,
+            m_TcpServer->SendRspFtdc(TOPIC_USER_MANAGE, sessionId, ftdc_tid_RspUnSubMarketData,
+                reinterpret_cast<const char*>(&specField), sizeof(CThostFtdcSpecificInstrumentField), ftdc_fid_SpecificInstrumentField, error_id,
                 error_msg.c_str());
         }
     }
     /// 订阅失败， 只发送一条
     else
     {
-        TCP_SEND_RSPINFO(TOPIC_USER_MANAGE, m_TcpServer, sessionId, ftdc_tid_RspUnSubMarketData,
-            CThostFtdcSpecificInstrumentField, &specField, ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
+        m_TcpServer->SendRspFtdc(TOPIC_USER_MANAGE, sessionId, ftdc_tid_RspUnSubMarketData,
+             reinterpret_cast<const char*>(&specField), sizeof(CThostFtdcSpecificInstrumentField), ftdc_fid_SpecificInstrumentField, error_id, error_msg.c_str());
     }
 }
 
@@ -310,14 +305,11 @@ void CMarketPlugin::HandleMarketDataRtn(const Msg &msg)
 
     m_UserSessionManager->CheckIfSubs(subscribers, sessionIdSet);
 
-    for (auto id:sessionIdSet)
+    for (auto id : sessionIdSet)
     {
-        TCP_SEND_RTNINFO(TOPIC_MARKET_PROCESS, m_TcpServer, id, ftdc_tid_RtnDepthMarketData_snap, CMarketDataExtField, marketData,
-                         ftdc_fid_DepthMarketDataField);
+        m_TcpServer->SendRtnFtdc(TOPIC_MARKET_PROCESS, id, ftdc_tid_RtnDepthMarketData_snap,
+            reinterpret_cast<const char *>(marketData), sizeof(CMarketDataExtField), ftdc_fid_DepthMarketDataField);
     }
-    
-
-
 }
 
 

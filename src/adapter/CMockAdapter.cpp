@@ -60,7 +60,7 @@ void CMockAdapter::SendThread()
         gettimeofday(&time, NULL);
         marketDataField.UpdateMillisec =  htonl(time.tv_usec/1000);
 
-        PUB_BIZ_MSG_TO_PLUGIN(m_FlowManagerSptr, TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, &marketDataField, sizeof(CMarketDataExtField), 1);
+        m_FlowManagerSptr->PubBizMsg2Plugin(TOPIC_MARKET_PROCESS, FUNC_REQ_MARKET_SNAPSHOT_RTN, 0, reinterpret_cast<const char*>(&marketDataField), sizeof(CMarketDataExtField), 1);
         CommonSleep(1000);
     }
 }

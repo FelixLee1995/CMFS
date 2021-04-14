@@ -74,6 +74,7 @@ public:
     std::string ConvertExchange(uint8_t exchange);
 };
 
+
 class CUdpMarketAdapter : public IMarketRecvAdapter
 {
 private:
@@ -82,6 +83,7 @@ private:
     std::shared_ptr<std::thread> m_GuardThread;
 
 public:
+    using Sptr = std::shared_ptr<CUdpMarketAdapter>;
     explicit CUdpMarketAdapter(const nlohmann::json &config);
     void Init() override;
     void Stop() override;

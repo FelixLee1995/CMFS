@@ -18,6 +18,7 @@
 #include "tcp/CTcpServer.h"
 #include "core/queue/concurrentqueue.h"
 #include "ds/common.h"
+#include "core/CFlow.h"
 
 using asio::ip::tcp;
 using namespace ctp_ftd;
@@ -97,6 +98,7 @@ class CTcpSession : public CTcpCommunicator, public std::enable_shared_from_this
 private:
     tcp::socket m_Socket;
     std::shared_ptr<CTcpServer> m_Server;
+    CFlowManager::Sptr m_FlowManager;
     CRevcBuffer m_RecvBuffer;
     MessageWrapper m_Msg;
     MessageQueue m_MsgQueue;
