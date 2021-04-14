@@ -8,11 +8,11 @@
 #define _MARKET_DATA_MANAGER_H_
 #pragma once
 
-
-#include "core/baseheader.h"
 #include <string>
 #include <map>
 #include <set>
+#include "core/baseheader.h"
+#include "core/mutex.h"
 
 
 class MarketDataCmp
@@ -35,7 +35,7 @@ class CMarketDataManager
 
         size_t LoadInstrumentFromCSV(const std::string& filePath = "./config/instruments.csv");
 
-        
+        RWMutex m_Mutex;
 
     public:
         using Sptr = std::shared_ptr<CMarketDataManager>;
@@ -57,6 +57,7 @@ class CMarketDataManager
 
         void GetMarketDataSubsribers(const std::string &instrumentID, std::bitset<MAX_ONLINE_USERS> &);
 
+        // 遍历读取markdata，  仅用于读
         void LockedIterFunc(std::function<void(const MarketData&)>);
 };
 

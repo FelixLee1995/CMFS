@@ -1,5 +1,5 @@
 #include "adapter/CCtpMarketAdapter.h"
-#include "plugin/CMarketDataManager.h"
+#include "bizData/CMarketDataManager.h"
 #include "core/plantformtools.h"
 
 

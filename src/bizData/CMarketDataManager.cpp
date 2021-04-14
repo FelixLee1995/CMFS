@@ -1,4 +1,4 @@
-#include "plugin/CMarketDataManager.h"
+#include "bizData/CMarketDataManager.h"
 #include <regex>
 #include <fstream>
 #include "core/plantformtools.h"
@@ -60,8 +60,11 @@ size_t CMarketDataManager::LoadInstrumentFromCSV(const std::string& filePath)
         data.ClosePrice = __DBL_MAX__;
         data.SettlementPrice = __DBL_MAX__;
         data.Turnover = 0;
-
-        m_MarketDataMap.try_emplace(instrumentID, data);
+        
+        {
+            RWMutex::WriteLock guard(m_Mutex);
+            m_MarketDataMap.try_emplace(instrumentID, data);
+        }
         instr_count++;
     }
 
@@ -70,6 +73,7 @@ size_t CMarketDataManager::LoadInstrumentFromCSV(const std::string& filePath)
 
 void CMarketDataManager::GetAllValidMarketData(std::set<CMarketDataExtField, MarketDataCmp> &dataSet) 
 {
+    RWMutex::ReadLock guard(m_Mutex);
     for (auto& data: m_MarketDataMap)
     {
         dataSet.insert(data.second.Data);
@@ -78,33 +82,35 @@ void CMarketDataManager::GetAllValidMarketData(std::set<CMarketDataExtField, Mar
 
 int CMarketDataManager::SubscribeByInstrumentID(int16_t index, const std::string &instrumentID, std::set<CMarketDataExtField, MarketDataCmp> &dataSet)
 {
-    ///
+    RWMutex::ReadLock guard(m_Mutex);
+
     auto iter = m_MarketDataMap.find(instrumentID);
     if (iter == m_MarketDataMap.end())
     {
         SPDLOG_ERROR("Failed to find such instrument: {}", instrumentID);
-        return -1;
+        return COMMON_FAILURE;
     }
 
     dataSet.insert(iter->second.Data);
     iter->second.Subscribers.set(index);
-    return 1;
+    return COMMON_OK;
 }
 
 
 int CMarketDataManager::UnSubscribeByInstrumentID(int16_t index, const std::string &instrumentID)
 {
-    ///
+    RWMutex::ReadLock guard(m_Mutex);
+
     auto iter = m_MarketDataMap.find(instrumentID);
     if (iter == m_MarketDataMap.end())
     {
         SPDLOG_ERROR("Failed to find such instrument: {}", instrumentID);
-        return -1;
+        return COMMON_FAILURE;
     }
 
     /// 将marketItem的订阅列表的标记位置reset为0
     iter->second.Subscribers.reset(index);
-    return 1;
+    return COMMON_OK;
 }
 
 
@@ -112,6 +118,9 @@ int CMarketDataManager::SubscribeByRule(
     int16_t index, const std::string &rule, std::set<CMarketDataExtField, MarketDataCmp> &dataSet)
 {
     int cnt = 0;
+    
+    RWMutex::ReadLock guard(m_Mutex);
+    
     for (auto &marketData : m_MarketDataMap)
     {
         std::regex e(rule);
@@ -129,6 +138,9 @@ int CMarketDataManager::SubscribeByRule(
 int CMarketDataManager::UnSubscribeByRule(int16_t index, const std::string &rule)
 {
     int cnt = 0;
+
+    RWMutex::ReadLock guard(m_Mutex);
+
     for (auto &marketData : m_MarketDataMap)
     {
         std::regex e(rule);
@@ -147,6 +159,7 @@ int CMarketDataManager::UnSubscribeByRule(int16_t index, const std::string &rule
 int CMarketDataManager::UnSubscribeAll(int16_t index)
 {
     int cnt = 0;
+    RWMutex::ReadLock guard(m_Mutex);
     for (auto &marketData : m_MarketDataMap)
     {
         cnt++;
@@ -157,6 +170,8 @@ int CMarketDataManager::UnSubscribeAll(int16_t index)
 
 void CMarketDataManager::GetMarketDataSubsribers(const std::string &instrumentID, std::bitset<MAX_ONLINE_USERS> & subscribers)
 {
+    RWMutex::ReadLock guard(m_Mutex);
+
     auto iter = m_MarketDataMap.find(instrumentID);
     if (iter == m_MarketDataMap.end())
     {
@@ -167,6 +182,9 @@ void CMarketDataManager::GetMarketDataSubsribers(const std::string &instrumentID
 }
 bool CMarketDataManager::UpdateMarketData(const CMarketDataExtField & marketDataField)
 {
+
+    RWMutex::WriteLock guard(m_Mutex);
+
     auto iter = m_MarketDataMap.find(marketDataField.InstrumentID);
     if (iter == m_MarketDataMap.end())
     {
@@ -186,6 +204,9 @@ bool CMarketDataManager::UpdateMarketData(const CMarketDataExtField & marketData
 bool CMarketDataManager::UpdateMarketData(
     const std::string &instrumentid, std::function<void(CMarketDataExtField &market)> updateFunc)
 {
+
+    RWMutex::WriteLock guard(m_Mutex);
+
     auto iter = m_MarketDataMap.find(instrumentid);
     if (iter == m_MarketDataMap.end())
     {
@@ -205,7 +226,9 @@ bool CMarketDataManager::UpdateMarketData(
 }
 
 void CMarketDataManager::LockedIterFunc(std::function<void(const MarketData &)> f)
-{
+{   
+    RWMutex::ReadLock guard(m_Mutex);
+
     for (auto market : m_MarketDataMap)
     {
         f(market.second);

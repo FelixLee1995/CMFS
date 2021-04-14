@@ -14,7 +14,7 @@
 #include "ds/bizDataStruct.h"
 #include "api/ctp_ext/ctp_ftdc_proto.h"
 #include "tcp/CTcpServer.h"
-#include "plugin/CUserSessionManager.h"
+#include "bizData/CUserSessionManager.h"
 
 
 

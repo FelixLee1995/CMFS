@@ -1,10 +1,14 @@
-#include "plugin/CUserSessionManager.h"
-#include <fstream>
 
+#include <fstream>
+#include "bizData/CUserSessionManager.h"
+#include "core/marco.h"
 
 
 CUserSessionManager::CUserSessionManager(int maxOnlineUser)
-{
+{   
+
+    RWMutex::WriteLock guard(m_Mutex);
+
     m_UserSessionVec.reserve(maxOnlineUser);
     
     for (int i = 0; i < maxOnlineUser; ++i)
@@ -56,7 +60,7 @@ int CUserSessionManager::LoadAuthorizedUsersFromFile()
 
 bool CUserSessionManager::CheckIfFull()
 {
-    std::lock_guard guard(m_Mutex);
+    RWMutex::ReadLock guard(m_Mutex);
 
     for (auto session: m_UserSessionVec)
     {
@@ -71,10 +75,10 @@ bool CUserSessionManager::CheckIfFull()
 
 bool CUserSessionManager::CheckIfNewSession(const UserSessionIdType& id)
 {
-    std::lock_guard guard(m_Mutex);
+    RWMutex::ReadLock guard(m_Mutex);
 
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.SessionID == id;});
-    if (iter == m_UserSessionVec.end())
+    if (MY_LIKELY(iter == m_UserSessionVec.end()))
     {
         return true;
     }
@@ -83,8 +87,8 @@ bool CUserSessionManager::CheckIfNewSession(const UserSessionIdType& id)
 
 
 bool CUserSessionManager::CheckIfAuthorized(const std::string& UserID)
-{
-    
+{   
+    /// 初始化时从内存读取，后续无更新
     auto iter = std::find_if(m_AuthorizedUsersVec.begin(), m_AuthorizedUsersVec.end(), [&](const std::string& id){return id == UserID;});
     if (iter == m_AuthorizedUsersVec.end())
     {
@@ -95,9 +99,9 @@ bool CUserSessionManager::CheckIfAuthorized(const std::string& UserID)
 
 bool CUserSessionManager::AddUserSession(SessionIdType sessionid)
 {
-    std::lock_guard guard(m_Mutex);
+    RWMutex::ReadLock guard(m_Mutex);
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.Status != (char)UserSessionStatus::Login;});
-    if (iter == m_UserSessionVec.end())
+    if (MY_UNLIKELY(iter == m_UserSessionVec.end()))
     {
         return false;
     }
@@ -115,27 +119,27 @@ bool CUserSessionManager::AddUserSession(SessionIdType sessionid)
 
 int CUserSessionManager::CheckIfLogin(const UserSessionIdType &id)
 {
-    std::lock_guard guard(m_Mutex);
+    RWMutex::ReadLock guard(m_Mutex);
 
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), 
         [&](const UserSession& t){return (t.SessionID == id) && (t.Status == (char)UserSessionStatus::Login);});
     
-    if (iter != m_UserSessionVec.end())
+    if (MY_LIKELY(iter != m_UserSessionVec.end()))
     {
         return iter - m_UserSessionVec.begin();
     }
 
-    return -1;
+    return COMMON_FAILURE;
 }
 
 
 
 bool CUserSessionManager::SubscribeAllBySessionID(SessionIdType sessionID) 
 {
-    std::lock_guard guard(m_Mutex);
+    RWMutex::WriteLock guard(m_Mutex);
 
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.SessionID == sessionID;});
-    if (iter == m_UserSessionVec.end())
+    if (MY_UNLIKELY(iter == m_UserSessionVec.end()))
     {
         SPDLOG_ERROR("Failed to find sesssionid {}", sessionID);
         return false;
@@ -149,11 +153,11 @@ bool CUserSessionManager::SubscribeAllBySessionID(SessionIdType sessionID)
 
 bool CUserSessionManager::UnSubscribeAllBySessionID(SessionIdType sessionID)
 {
-    std::lock_guard guard(m_Mutex);
+    RWMutex::WriteLock  guard(m_Mutex);
 
     auto iter = std::find_if(
         m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession &t) { return t.SessionID == sessionID; });
-    if (iter == m_UserSessionVec.end())
+    if (MY_UNLIKELY(iter == m_UserSessionVec.end()))
     {
         SPDLOG_ERROR("Failed to find sesssionid {}", sessionID);
         return false;
@@ -166,7 +170,7 @@ bool CUserSessionManager::UnSubscribeAllBySessionID(SessionIdType sessionID)
 
 void CUserSessionManager::CheckIfSubs(std::bitset<MAX_ONLINE_USERS> &subscribers, std::set<SessionIdType>& dispatchSet) {
 
-    std::lock_guard guard(m_Mutex);
+    RWMutex::ReadLock  guard(m_Mutex);
 
     for (int i = 0; i < MAX_ONLINE_USERS; ++i)
     {
@@ -182,13 +186,13 @@ void CUserSessionManager::CheckIfSubs(std::bitset<MAX_ONLINE_USERS> &subscribers
 bool CUserSessionManager::HandleUserLogout(SessionIdType sessionID)
 {
 
-    std::lock_guard guard(m_Mutex);
+    RWMutex::WriteLock  guard(m_Mutex);
 
     auto iter = std::find_if(
         m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession &t) { return t.SessionID == sessionID; });
 
 
-    if (iter==m_UserSessionVec.end())
+    if (MY_UNLIKELY(iter==m_UserSessionVec.end()))
     {
         return false;
     }

@@ -94,6 +94,7 @@ CTcpSession::CTcpSession(tcp::socket socket, SessionIdType sessionId)
     m_Server.reset(Singleton<CTcpServer>::GetInstance());
     m_FlowManager.reset(Singleton<CFlowManager>::GetInstance());
     assert(m_Server);
+    assert(m_FlowManager);
 }
 
 void CTcpSession::Start()
@@ -110,9 +111,9 @@ void CTcpSession::DoReadHeader()
             {
                 /// ec 表示读取错误
                 SPDLOG_ERROR("asio read failed: {}", ec.message());
-
+                /// 发送消息到业务插件。　处理客户下线
                 m_FlowManager->PubBizMsg2Plugin(TOPIC_USER_MANAGE, FUNC_REQ_USER_DISCONNECT, m_SessionId, nullptr, 0, 1);
-                /// TODO　发送到业务层。　通知客户下线
+                
                 return;
             }
 
@@ -155,19 +156,14 @@ void CTcpSession::do_read_body()
                     ftdc_header *ftdcheader = (ftdc_header *)(m_Msg.body() + offset);
                     auto cnt = ntohs(ftdcheader->ftdc_field_count);
                     uint32_t topicID = ntohl(ftdcheader->ftdc_topic_id);
-                    uint16_t seriesID = ntohs(ftdcheader->ftdc_seq_series);
-                    uint32_t seq_no = ntohl(ftdcheader->ftdc_seq_no);
-                    uint32_t req_id = ntohl(ftdcheader->ftdc_req_id);
                     uint16_t contenLen = ntohs(ftdcheader->ftdc_content_len);
-
-                    SPDLOG_DEBUG(
-                        "topicid is {}, seriesID is {}, seq_no is {}, reqid_is {}", topicID, seriesID, seq_no, req_id);
 
                     auto contenLenCheck = contenLen < MSG_PACK_MAX_LENGTH;
                     if (contenLenCheck == false)
                     {
                         SPDLOG_ERROR("contentLen oversize, ftdc_topicid[{}]", topicID);
                         /// TODO 处理contenlen 超长的问题
+                        return;
                     }
 
                     char *content = reinterpret_cast<char *>(ftdcheader) + sizeof(ftdc_header);
@@ -207,7 +203,7 @@ void CTcpSession::do_read_body()
                             break;
                         }
 
-                            /// 用户登出请求
+                        /// 用户登出请求
                         case ftdc_fid_ReqUserLogout:
                         {
                             m_FlowManager->PubBizMsg2Plugin(TOPIC_USER_MANAGE, FUNC_REQ_USER_LOGOUT, m_SessionId, content, contenLen, cnt);

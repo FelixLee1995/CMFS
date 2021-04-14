@@ -8,9 +8,10 @@
 #define _USER_SESSION_MANAGER_H_
 #pragma once
 
-#include "core/baseheader.h"
+
 #include <set>
-#include <mutex>
+#include "core/mutex.h"
+#include "core/baseheader.h"
 
 class CUserSessionManager
 {
@@ -20,7 +21,7 @@ private:
 
     int LoadAuthorizedUsersFromFile();
 
-    std::mutex m_Mutex;
+    RWMutex m_Mutex;
 
 public:
     using Ptr = std::shared_ptr<CUserSessionManager>;
@@ -47,6 +48,7 @@ public:
 
     bool UnSubscribeAllBySessionID(SessionIdType sessionID);
 
+    //处理用户登出
     bool HandleUserLogout(SessionIdType sessionID);
 
     ~CUserSessionManager();

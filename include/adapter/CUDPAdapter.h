@@ -13,7 +13,7 @@
 #include "IAdapter.h"
 #include <string>
 #include <iomanip>
-#include "plugin/CMarketDataManager.h"
+#include "bizData/CMarketDataManager.h"
 
 
 using namespace GtjaMdV3;

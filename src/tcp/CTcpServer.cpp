@@ -126,7 +126,8 @@ int CTcpServer::SendRtnFtdc(TOPICID_TYPE topicId, SessionIdType sessionId, ctp_f
     ftdc_crpheader_s->protocol = ftdc_crp_protocol;
     ftdc_crpheader_s->method = ftdc_cmp_compresszero;
     auto senLen = encodedLen + sizeof(ftd_header) + sizeof(ftdc_crpheader);
-    SendMsg(encodedData, senLen, sessionId, topicId);
+    
+    return SendMsg(encodedData, senLen, sessionId, topicId);
 }
 
 int CTcpServer::SendMultiRtnFtdc(TOPICID_TYPE topicId, SessionIdType sessionId, ctp_ftd::ftdc_tid_type ftdc_tid,

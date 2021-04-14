@@ -13,8 +13,8 @@
 #include "interface/IPlugin.h"
 #include "ds/bizDataStruct.h"
 #include "plugin/CUserManagePlugin.h"
-#include "plugin/CMarketDataManager.h"
-#include "plugin/CUserSessionManager.h"
+#include "bizData/CMarketDataManager.h"
+#include "bizData/CUserSessionManager.h"
 
 
 

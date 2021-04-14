@@ -42,8 +42,11 @@ const FUNCID_TYPE FUNC_REQ_USER_DISCONNECT = 0x3004;     /// 客户端连接断�
 #define COMMON_FAILURE  -1;
 
 
-
-
+/// ErrorId & Msg
+const int ErrorID_NotLogin = 1;
+const char ErrorMsg_NotLogin[32] = "User Not Login"; 
+const int ErrorID_NoSuchInstr = 2;
+const char ErrorMsg_NoSuchInstr[32] = "No such Instrument"; 
 
 
 #endif //CDEFINE_H
