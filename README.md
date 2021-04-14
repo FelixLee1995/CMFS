@@ -27,7 +27,7 @@
 
 ## 三、数据流图
 
-todo 
+todo  待补充
 
 ## 四、工作计划
 
@@ -40,4 +40,126 @@ todo
 6. 客户试用与预上线
 
 ![进度计划](./doc/images/进度计划gantt.png)
+
+## 五、 架构设计
+   见[架构设计文档](./doc/CMFS架构设计.md)
+
+
+## 六、 代码结构
+
+```
+├── CMakeLists.txt     
+├── compile.sh
+├── doc           【设计文档】
+├── Dockerfile
+├── README.md
+├── references    【参考文档】
+├── dependencies  【三方依赖库】
+│   ├── include
+│   │   ├── asio
+│   │   ├── asio.hpp
+│   │   ├── gmock
+│   │   ├── gtest
+│   │   ├── nlohmann
+│   │   └── spdlog
+│   └── lib
+├── include       【头文件】
+│   ├── adapter
+│   │   ├── CAdapterManager.h
+│   │   ├── CCtpMarketAdapter.h
+│   │   ├── CMockAdapter.h
+│   │   ├── CUDPAdapter.h
+│   │   └── IAdapter.h
+│   ├── api
+│   │   ├── ctp
+│   │   │   ├── ThostFtdcMdApi.h
+│   │   │   ├── ThostFtdcTraderApi.h
+│   │   │   ├── ThostFtdcUserApiDataType.h
+│   │   │   └── ThostFtdcUserApiStruct.h
+│   │   ├── ctp_ext
+│   │   │   ├── ctp_ext.h
+│   │   │   └── ctp_ftdc_proto.h
+│   │   └── udp_market
+│   │       ├── GtjaMdStructV3.h
+│   │       └── GtjaMdUserApi.h
+│   ├── apiWrapper
+│   │   └── ctp
+│   │       ├── MyCtpApi.h
+│   │       ├── MyCtpSpi.h
+│   │       ├── MyMarketApi.h
+│   │       └── MyMarketSpi.h
+│   ├── bizData
+│   │   ├── CMarketDataManager.h
+│   │   └── CUserSessionManager.h
+│   ├── CConfig.hpp
+│   ├── CLog.h
+│   ├── core   
+│   ├── ds
+│   │   ├── bizDataStruct.h
+│   │   ├── bizDataType.h
+│   │   ├── CDefine.h
+│   │   └── common.h
+│   ├── Init.h
+│   ├── interface
+│   │   ├── IPlugin.h
+│   │   └── IQueue.h
+│   ├── plugin
+│   │   ├── CMarketPlugin.h
+│   │   └── CUserManagePlugin.h
+│   ├── tcp
+│   │   ├── CTcpServer.h
+│   │   └── CTcpSession.h
+│   └── utils
+│       ├── nettrans.h
+│       ├── ProcSingletonCheck.h
+│       └── Utils.h
+├── src           【源码目录】
+│   ├── adapter
+│   │   ├── CAdapterManager.cpp
+│   │   ├── CCtpMarketAdapter.cpp
+│   │   ├── CMockAdapter.cpp
+│   │   └── CUDPAdapter.cpp
+│   ├── apiWrapper
+│   │   └── ctp
+│   │       ├── MyCtpApi.cpp
+│   │       ├── MyCtpSpi.cpp
+│   │       ├── MyMarketApi.cpp
+│   │       └── MyMarketSpi.cpp
+│   ├── bizData
+│   │   ├── CMarketDataManager.cpp
+│   │   └── CUserSessionManager.cpp
+│   ├── core
+│   │   └── semaphore.cpp
+│   ├── main.cpp
+│   ├── plugin
+│   │   ├── CMarketPlugin.cpp
+│   │   └── CUserManagePlugin.cpp
+│   └── tcp
+│       ├── CTcpServer.cpp
+│       └── CTcpSession.cpp
+├── test          【Gtest测试】
+│   ├── InstrumentQryProcess.cpp
+│   ├── test_base_qry.cpp
+│   ├── test_base_qry.h
+│   ├── test_cache.cpp
+│   ├── test_marketdata.cpp
+│   ├── test_md_sub.cpp
+│   ├── test_md_sub.h
+│   ├── test_suit.h
+│   ├── test_suit_md.h
+│   └── test_suit_trade.h
+```
+
+## 七、 ReleaseNotes
+
+   见[发布说明](./doc/发布说明.md)
+
+
+## 八、 后续计划
+- 兼容 股票期权api
+- 张江机房上线五所行情版本前置(需要申请操作员账号以及流量测算)
+
+## 九、 参考文档
+   + [FTD交易数据交换协议](./references/期货交易数据交换协议_FTD协议.pdf)
+   + [ftd协议解析总结](./references/ftd协议解析.pdf)
 
