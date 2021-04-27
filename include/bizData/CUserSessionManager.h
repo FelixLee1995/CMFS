@@ -13,11 +13,21 @@
 #include "core/mutex.h"
 #include "core/baseheader.h"
 
+
+class CUser
+{
+    public:
+    bool IfWildcardAllowed;
+    std::string UserID;
+
+    CUser(std::string, bool);
+};
+
 class CUserSessionManager
 {
 private:
     std::vector<struct UserSession> m_UserSessionVec;
-    std::vector<std::string> m_AuthorizedUsersVec;
+    std::vector<CUser> m_AuthorizedUsersVec;
 
     int LoadAuthorizedUsersFromFile();
 
@@ -36,13 +46,19 @@ public:
     /// 检查该用户是否授权
     bool CheckIfAuthorized(const std::string &userId);
 
+    /// 获取session是否具有通配订阅的权限
+    bool GetIfWildcard(const std::string &userId);
+
+    /// 检查是否可以使用通配订阅
+    bool CheckIfWildcard(const UserSessionIdType &id);
+
     /// 返回值为UserSessionVec中的index, 用于直接操作行情的subscribers表
     int CheckIfLogin(const UserSessionIdType &id);
 
     /// 根据subscribers列表， 计算出需要推送的用户set
     void CheckIfSubs(std::bitset<MAX_ONLINE_USERS>& subscribers, std::set<SessionIdType>&);
 
-    bool AddUserSession(SessionIdType sessionID);
+    bool AddUserSession(SessionIdType sessionID, bool if_wildcard);
 
     bool SubscribeAllBySessionID(SessionIdType sessionID);
 

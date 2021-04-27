@@ -129,7 +129,7 @@ void MyUdpApi::OnRtnDepthSnapshot(const GtjaMdV3::GtjaMdInstrumentFieldV3 *pInst
     //                  << pMBL[0].AskVolume;
     //    }
 
-    //SPDLOG_INFO("Rtn marketdata, {}, vol {}", pInstrument->InstrumentID, pTradeInfo->Volume);
+    SPDLOG_INFO("Rtn marketdata, {}, vol {}", pInstrument->InstrumentID, pTradeInfo->Volume);
 
     CMarketDataExtField marketDataOut;
 

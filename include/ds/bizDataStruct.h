@@ -41,6 +41,7 @@ struct UserSession
 {
     bool IfSubsAll;   /// 是否订阅全部
     bool IfUnsubAll;  /// 是否退订全部
+    bool IfWildcard;  /// 是否可以通配符订阅
     char Status;      ///登录状态
     SessionIdType SessionID;     /// 会话id
     long Timestamp; //标记这个用户， 区别不同登录时间用户重用 UserSessionID

@@ -4,6 +4,13 @@
 #include "core/marco.h"
 
 
+CUser::CUser(std::string userid, bool ifWildcard)
+: UserID(userid), IfWildcardAllowed(ifWildcard)
+{
+
+}
+
+
 CUserSessionManager::CUserSessionManager(int maxOnlineUser)
 {   
 
@@ -16,6 +23,7 @@ CUserSessionManager::CUserSessionManager(int maxOnlineUser)
         UserSession userSession;
         userSession.IfSubsAll = false;
         userSession.IfUnsubAll = false;
+        userSession.IfWildcard = false;
         userSession.SessionID = 0;
         userSession.Status = (char) UserSessionStatus::Invalid;
         userSession.Timestamp = 0;
@@ -43,9 +51,10 @@ int CUserSessionManager::LoadAuthorizedUsersFromFile()
     if (ifs)
     {   
         std::string userid;
-        while(ifs>>userid)
+        bool IfWildcard;
+        while(ifs>>userid >> IfWildcard)
         {
-            m_AuthorizedUsersVec.push_back(userid);
+            m_AuthorizedUsersVec.emplace_back(userid, IfWildcard);
         }
     }
     else
@@ -89,7 +98,7 @@ bool CUserSessionManager::CheckIfNewSession(const UserSessionIdType& id)
 bool CUserSessionManager::CheckIfAuthorized(const std::string& UserID)
 {   
     /// 初始化时从内存读取，后续无更新
-    auto iter = std::find_if(m_AuthorizedUsersVec.begin(), m_AuthorizedUsersVec.end(), [&](const std::string& id){return id == UserID;});
+    auto iter = std::find_if(m_AuthorizedUsersVec.begin(), m_AuthorizedUsersVec.end(), [&](const CUser&  user){return user.UserID == UserID;});
     if (iter == m_AuthorizedUsersVec.end())
     {
         return false;
@@ -97,7 +106,30 @@ bool CUserSessionManager::CheckIfAuthorized(const std::string& UserID)
     return true;
 }
 
-bool CUserSessionManager::AddUserSession(SessionIdType sessionid)
+bool CUserSessionManager::GetIfWildcard(const std::string& UserID)
+{   
+    /// 初始化时从内存读取，后续无更新
+    auto iter = std::find_if(m_AuthorizedUsersVec.begin(), m_AuthorizedUsersVec.end(), [&](const CUser&  user){return user.UserID == UserID;});
+    if (iter == m_AuthorizedUsersVec.end())
+    {
+        return false;
+    }
+    return iter->IfWildcardAllowed;
+}
+
+bool CUserSessionManager::CheckIfWildcard(const UserSessionIdType &id)
+{
+    /// 初始化时从内存读取，后续无更新
+    auto iter = std::find_if(
+        m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession &t) { return t.SessionID == id; });
+    if (MY_UNLIKELY(iter == m_UserSessionVec.end()))
+    {
+        return false;
+    }
+    return iter->IfWildcard;
+}
+
+bool CUserSessionManager::AddUserSession(SessionIdType sessionid, bool if_wildcard)
 {
     RWMutex::ReadLock guard(m_Mutex);
     auto iter = std::find_if(m_UserSessionVec.begin(), m_UserSessionVec.end(), [&](const UserSession& t){return t.Status != (char)UserSessionStatus::Login;});
@@ -109,6 +141,7 @@ bool CUserSessionManager::AddUserSession(SessionIdType sessionid)
 
     iter->SessionID = sessionid;
     iter->Status = (char) UserSessionStatus::Login;
+    iter->IfWildcard = if_wildcard;
 
     time_t timestamp;
     iter->Timestamp = time(&timestamp);

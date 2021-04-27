@@ -160,6 +160,18 @@ size_t CMarketPlugin::SubMarketByOneRule(
 {
     size_t subs_cnt = 0;
     auto wildcard_index = rule.find('*');
+
+
+    ///  若通配符订阅，  检查该客户的权限
+    if (wildcard_index != rule.npos)
+    {
+        auto if_wildcard = m_UserSessionManager->CheckIfWildcard(sessionid);
+        if (if_wildcard == false)
+            SPDLOG_ERROR("sessionid {} has no wildcard permission", sessionid);
+            return subs_cnt;
+    }
+
+
     if (rule == "*")
     {
         /// 全部订阅

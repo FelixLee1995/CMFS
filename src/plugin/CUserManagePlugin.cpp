@@ -118,10 +118,12 @@ std::tuple<int, std::string> CUserManagePlugin::CheckLoginUser(int sessionId, co
         return std::make_tuple((int)LoginErrorID::Unauthorized, "unauthorized user!");
     }
 
+    auto if_wildcard = m_UserSessionManager->GetIfWildcard(reqField->UserID);
+
 
     /// 4. 生成新的UserSession, 并放入vector
 
-    auto if_session_op = m_UserSessionManager->AddUserSession(sessionId);
+    auto if_session_op = m_UserSessionManager->AddUserSession(sessionId, if_wildcard);
     if (!if_session_op)
     {
         SPDLOG_ERROR("Failed to addUserSession {}", sessionId);
