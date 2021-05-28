@@ -167,8 +167,11 @@ size_t CMarketPlugin::SubMarketByOneRule(
     {
         auto if_wildcard = m_UserSessionManager->CheckIfWildcard(sessionid);
         if (if_wildcard == false)
+        {
             SPDLOG_ERROR("sessionid {} has no wildcard permission", sessionid);
             return subs_cnt;
+        }
+
     }
 
 

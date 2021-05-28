@@ -1,0 +1,1 @@
+tar -czvf cmfs_$1.tar.gz runtime/lib runtime/cmfs runtime/qry_ctp runtime/config  runtime/*.sh

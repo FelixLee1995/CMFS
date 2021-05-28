@@ -29,12 +29,13 @@ void CTcpServer::DoAccept()
     m_Acceptor.async_accept([this](asio::error_code ec, tcp::socket socket) {
         if (!ec)
         {
-            SPDLOG_INFO("socketfd is {}", socket.native_handle());
+            SPDLOG_INFO("socketfd is {}, remoteIP: {}", socket.native_handle(), socket.remote_endpoint().address().to_v4().to_string());
             m_SessionIdx = (++m_SessionIdx) % INT32_MAX;  //idx不断循环自增， 避免和socketfd无法对应
             auto session = std::make_shared<CTcpSession>(std::move(socket), m_SessionIdx);
             session->Start();
+
             {
-                //RWMutex::WriteLock guard(m_Mutex);
+                RWMutex::WriteLock guard(m_Mutex);
                 m_SessionMap.emplace(m_SessionIdx, session);  /// TODO  断线时候，  从sessionMap中删除
             }
         }
